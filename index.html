@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lého Dehove - Bio-Mechatronics</title>
+  <meta name="description" content="Lého Dehove - Bio-Mechatronics, Computer Vision, Embedded Control & Robotics engineering student at ESME Paris." />
+  
+  <meta property="og:title" content="Lého Dehove - Bio-Mechatronics" />
+  <meta property="og:description" content="Bio-Mechatronics, Computer Vision, Embedded Control & Robotics." />
+  <meta property="og:url" content="https://dehoveleho.github.io" />
+  <meta property="og:type" content="website" />
+  <meta name="theme-color" content="#070707" />
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='25' fill='%23191919'/><text x='50%' y='68%' font-size='50' font-weight='900' fill='white' text-anchor='middle' font-family='sans-serif'>LD</text></svg>" type="image/svg+xml" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            gray: {
+              750: '#262626'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body class="antialiased font-['Plus_Jakarta_Sans',sans-serif] bg-gray-50 dark:bg-[#070707] text-gray-900 dark:text-white transition-colors duration-300 min-h-screen">
+
+  <main>
+    <div class="relative h-screen overflow-hidden select-none">
+      <canvas id="heroCanvas" class="absolute inset-0 w-full h-full z-0 cursor-crosshair"></canvas>
+
+      <nav id="mainNavbar" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)] md:w-auto pointer-events-auto transition-all duration-300 ease-in-out" aria-label="Main navigation">
+        <div class="bg-white/90 dark:bg-[#141414]/90 backdrop-blur-md border border-neutral-200 dark:border-neutral-800 px-6 sm:px-8 rounded-full shadow-sm">
+          <div class="flex justify-between items-center h-14">
+            
+            <div class="flex-shrink-0">
+              <a href="#" class="flex items-center group" aria-label="Back to home">
+                <svg id="LD-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 50" class="h-7 w-auto">
+                  <text x="5" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="42" letter-spacing="-2" class="fill-gray-900 dark:fill-white transition-colors duration-300">LD</text>
+                </svg>
+              </a>
+            </div>
+
+            <div class="hidden md:flex md:items-center ml-8">
+              <ul class="flex items-center space-x-1">
+                <li>
+                  <a href="#" class="px-3 py-2 text-sm font-medium text-gray-300">
+                    Home
+                  </a>
+                </li>
+                <li>
+                  <a href="#about" class="px-3 py-2 text-sm font-medium text-gray-300">
+                    About
+                  </a>
+                </li>
+                <li>
+                  <a href="#projects" class="px-3 py-2 text-sm font-medium text-gray-300">
+                    Projects
+                  </a>
+                </li>
+                <li>
+                  <a href="#cad-models" class="px-3 py-2 text-sm font-medium text-gray-300">
+                    CAD Models
+                  </a>
+                </li>
+                <li>
+                  <a href="#experiments" class="px-3 py-2 text-sm font-medium text-gray-300">
+                    Experiments
+                  </a>
+                </li>
+                <li>
+                  <a href="#contact" class="px-3 py-2 text-sm font-medium text-gray-300">
+                    Contact
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <div class="md:hidden ml-4 flex items-center">
+              <button id="mobileMenuBtn" class="p-2 text-gray-200 focus:outline-none relative w-9 h-9 flex items-center justify-center" aria-label="Open menu" aria-expanded="false">
+                <div class="flex flex-col justify-between w-5 h-4">
+                  <span id="burger-top" class="block h-[2px] w-full bg-current transform transition-all duration-300 ease-in-out"></span>
+                  <span id="burger-mid" class="block h-[2px] w-full bg-current transition-all duration-300 ease-in-out"></span>
+                  <span id="burger-bot" class="block h-[2px] w-full bg-current transform transition-all duration-300 ease-in-out"></span>
+                </div>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <div id="mobileMenuDropdown" class="hidden mt-2 p-4 bg-white/95 dark:bg-[#141414]/95 backdrop-blur-md border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xl flex-col gap-1 text-center text-sm font-medium">
+          <a href="#" class="mobileNavLink block py-2 text-gray-200">Home</a>
+          <a href="#about" class="mobileNavLink block py-2 text-gray-200">About</a>
+          <a href="#projects" class="mobileNavLink block py-2 text-gray-200">Projects</a>
+          <a href="#cad-models" class="mobileNavLink block py-2 text-gray-200">CAD Models</a>
+          <a href="#experiments" class="mobileNavLink block py-2 text-gray-200">Experiments</a>
+          <a href="#contact" class="mobileNavLink block py-2 text-gray-200">Contact</a>
+        </div>
+      </nav>
+
+      <div class="absolute bottom-8 left-8 flex flex-col gap-3 z-20 pointer-events-auto">
+        <a href="https://linkedin.com/in/leho-dehove" target="_blank" rel="noopener noreferrer" class="w-6 h-6 flex items-center justify-center text-white" aria-label="LinkedIn">
+          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"></path>
+          </svg>
+        </a>
+        <a href="https://github.com/DehoveLeho" target="_blank" rel="noopener noreferrer" class="w-6 h-6 flex items-center justify-center text-white" aria-label="GitHub">
+          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path>
+          </svg>
+        </a>
+        <a href="mailto:lehodehove@gmail.com" class="w-6 h-6 flex items-center justify-center text-white" aria-label="Email">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 512 512" aria-hidden="true">
+            <path d="M48 64C21.5 64 0 85.5 0 112c0 15.1 7.1 29.3 19.2 38.4L236.8 313.6c11.4 8.5 27 8.5 38.4 0L492.8 150.4c12.1-9.1 19.2-23.3 19.2-38.4c0-26.5-21.5-48-48-48L48 64zM0 176L0 384c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-208L294.4 339.2c-22.8 17.1-54 17.1-76.8 0L0 176z"></path>
+          </svg>
+        </a>
+      </div>
+
+      <div class="flex h-full flex-col items-center justify-center p-6 sm:p-24 relative z-20 pointer-events-none" role="main" aria-label="Main content">
+        <div class="relative mb-6 select-none pointer-events-auto">
+          <h1 class="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-extrabold text-center relative z-10 whitespace-nowrap tracking-tight text-white">
+            Lého Dehove
+          </h1>
+        </div>
+
+        <p class="text-center text-xs sm:text-sm font-semibold tracking-widest uppercase text-gray-400 mt-2 pointer-events-auto">
+          Bio-Mechatronics // Robotics // Embedded Systems
+        </p>
+
+        <a href="#about" class="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 pointer-events-auto" aria-label="Scroll to About section">
+          <svg class="w-6 h-6 text-white opacity-60 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </a>
+      </div>
+
+    </div>
+
+
+    <section id="about" class="relative pt-32 pb-16 bg-[#121212]">
+      <div class="absolute top-0 left-0 right-0 h-28 sm:h-40 bg-gradient-to-b from-[#070707] to-transparent pointer-events-none z-10"></div>
+
+      <div class="max-w-7xl mx-auto px-6 sm:px-12 relative z-10">
+        
+        <div class="mb-16 sm:mb-20">
+          <div class="flex items-end gap-6 sm:gap-8">
+            <h2 class="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white whitespace-nowrap">About</h2>
+            <div class="h-[3px] w-full bg-gray-900/30 dark:bg-white/30 mb-2"></div>
+          </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-8 md:gap-14 items-start">
+          
+          <div class="flex-shrink-0 w-full md:w-auto">
+            <div class="relative w-full h-80 sm:w-72 sm:h-[23rem] sm:mx-auto md:mx-0 rounded-2xl overflow-hidden border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-[#181818] p-1.5 shadow-sm">
+              <img src="assets/img/leho-dehove.jpg" alt="Lého Dehove" class="w-full h-full object-cover object-top rounded-xl" />
+            </div>
+          </div>
+
+          <div class="flex-1">
+            <div class="mb-6">
+              <h3 class="text-3xl sm:text-4xl font-medium text-gray-900 dark:text-white">Lého</h3>
+              <h4 class="text-5xl sm:text-6xl font-bold text-gray-900 dark:text-white">Dehove</h4>
+            </div>
+
+            <div class="flex flex-wrap gap-2 sm:gap-2.5 mb-6 sm:mb-8">
+              <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#1a1a1a] text-xs font-semibold text-neutral-800 dark:text-neutral-200 tracking-tight shadow-sm">
+                <svg class="w-3.5 h-3.5 text-[#191919] dark:text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                </svg>
+                Paris, France
+              </span>
+              <span class="px-3.5 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#1a1a1a] text-xs font-semibold text-neutral-800 dark:text-neutral-200 tracking-tight shadow-sm">
+                Bio-Mechatronics
+              </span>
+              <span class="px-3.5 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#1a1a1a] text-xs font-semibold text-neutral-800 dark:text-neutral-200 tracking-tight shadow-sm">
+                Robotics & Control
+              </span>
+              <span class="px-3.5 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#1a1a1a] text-xs font-semibold text-neutral-800 dark:text-neutral-200 tracking-tight shadow-sm">
+                Embedded Systems
+              </span>
+              <span class="px-3.5 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#1a1a1a] text-xs font-semibold text-neutral-800 dark:text-neutral-200 tracking-tight shadow-sm">
+                Computer Vision
+              </span>
+            </div>
+
+            <p class="text-base sm:text-lg text-gray-700 dark:text-gray-300 max-w-3xl leading-relaxed mb-8">
+              Engineering student at ESME Paris specializing in Bio-Mechatronics. Driven by cyber-physical system design, kinematic modeling, and rapid hardware-software prototyping. Seeking a 6-month Master's thesis / R&D internship starting April 2027.
+            </p>
+
+            <div class="flex justify-center lg:justify-start mb-10">
+              <a href="assets/Leho_Dehove_CV.pdf" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white bg-white text-[#191919] text-xs uppercase tracking-wider font-bold shadow-sm">
+                View Resume
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M15 3h6v6"></path>
+                  <path d="M10 14 21 3"></path>
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                </svg>
+              </a>
+            </div>
+
+            <div class="mb-10">
+              <h5 class="text-2xl sm:text-3xl font-bold mb-6 text-[#191919] dark:text-white">My Journey</h5>
+              
+              <div class="relative space-y-6">
+                <div class="absolute left-[6px] bottom-0 w-[2px] bg-[#191919] dark:bg-white" style="height:calc(100% - 2rem)"></div>
+                <div class="absolute left-[6px] top-0 w-[2px] bg-gray-400 dark:bg-gray-600 h-8"></div>
+
+                <div class="relative pl-8">
+                  <div class="absolute left-0 top-2 w-3.5 h-3.5 rounded-full bg-[#191919] dark:bg-white border-2 border-gray-50 dark:border-[#121212]"></div>
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="flex-1 min-w-0">
+                      <h6 class="text-lg font-bold text-[#191919] dark:text-white uppercase">ESME School of Engineering, Paris</h6>
+                      <p class="text-base font-medium text-gray-700 dark:text-gray-300">M.Sc. in Engineering • Generalist specialized in Bio-Mechatronics</p>
+                    </div>
+                    <span class="text-sm font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap flex-shrink-0">2022 - 2027</span>
+                  </div>
+                </div>
+
+                <div class="relative pl-8">
+                  <div class="absolute left-0 top-2 w-3.5 h-3.5 rounded-full bg-[#191919] dark:bg-white border-2 border-gray-50 dark:border-[#121212]"></div>
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="flex-1 min-w-0">
+                      <h6 class="text-lg font-bold text-[#191919] dark:text-white uppercase">CNRS @ESPCI PSL University (Brain Plasticity Lab)</h6>
+                      <p class="text-base font-medium text-gray-700 dark:text-gray-300">Computer Vision R&D Intern • Video processing & Kinematic tracking</p>
+                    </div>
+                    <span class="text-sm font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap flex-shrink-0">2026</span>
+                  </div>
+                </div>
+
+                <div class="relative pl-8">
+                  <div class="absolute left-0 top-2 w-3.5 h-3.5 rounded-full bg-[#191919] dark:bg-white border-2 border-gray-50 dark:border-[#121212]"></div>
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="flex-1 min-w-0">
+                      <h6 class="text-lg font-bold text-[#191919] dark:text-white uppercase">Universiti Putra Malaysia (UPM)</h6>
+                      <p class="text-base font-medium text-gray-700 dark:text-gray-300">Academic Exchange • Electrical & Electronics Engineering</p>
+                    </div>
+                    <span class="text-sm font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap flex-shrink-0">2025 - 2026</span>
+                  </div>
+                </div>
+
+                <div class="relative pl-8">
+                  <div class="absolute left-0 top-2 w-3.5 h-3.5 rounded-full bg-[#191919] dark:bg-white border-2 border-gray-50 dark:border-[#121212]"></div>
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="flex-1 min-w-0">
+                      <h6 class="text-lg font-bold text-[#191919] dark:text-white uppercase">Danfoss Power Solutions</h6>
+                      <p class="text-base font-medium text-gray-700 dark:text-gray-300">Manufacturing & Quality Operator • Fluid Power Systems, CNC</p>
+                    </div>
+                    <span class="text-sm font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap flex-shrink-0">2025</span>
+                  </div>
+                </div>
+
+                <div class="relative pl-8">
+                  <div class="absolute left-0 top-2 w-3.5 h-3.5 rounded-full bg-[#191919] dark:bg-white border-2 border-gray-50 dark:border-[#121212]"></div>
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="flex-1 min-w-0">
+                      <h6 class="text-lg font-bold text-[#191919] dark:text-white uppercase">ESME Club & FabLab</h6>
+                      <p class="text-base font-medium text-gray-700 dark:text-gray-300">FabLab Administrator & Vice-President • CNC, SLA, FDM & management of hundreds students</p>
+                    </div>
+                    <span class="text-sm font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap flex-shrink-0">2022 - 2025</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <section id="projects" class="pt-32 pb-16 bg-gray-50 dark:bg-[#121212] transition-colors duration-300">
+      <div class="max-w-7xl mx-auto px-6 sm:px-12">
+        
+        <div class="mb-16 sm:mb-20">
+          <div class="flex items-end gap-6 sm:gap-8">
+            <h2 class="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white whitespace-nowrap">Projects</h2>
+            <div class="h-[3px] w-full bg-gray-900/30 dark:bg-white/30 mb-2"></div>
+          </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-8 items-start">
+
+          <!-- Left Column on Desktop (KiAnSo, AILAPS, Cuicui) -->
+          <div class="contents md:flex md:flex-col md:gap-8 md:flex-1 md:min-w-0">
+
+            <!-- Card 1: KiAnSo -->
+            <div class="w-full border border-neutral-200 dark:border-neutral-800/80 bg-white dark:bg-[#141414] rounded-2xl overflow-hidden flex flex-col shadow-sm order-1 md:order-none">
+              <div class="p-2.5 sm:p-3 pb-0 space-y-2">
+                <div class="relative h-40 sm:h-48 rounded-xl overflow-hidden bg-neutral-100 dark:bg-[#1c1c1c] flex items-center justify-center p-2">
+                  <img src="assets/img/kianso_output.png" alt="KiAnSo Synchronized Kinematic Profiles &amp; Video Tracking" class="w-full h-full object-contain rounded-lg" />
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <div class="relative h-40 sm:h-48 rounded-xl overflow-hidden bg-neutral-100 dark:bg-[#1c1c1c] flex items-center justify-center p-2">
+                    <img src="assets/img/kianso_ui.png" alt="KiAnSo Computer Vision Detection &amp; Segmentation Interface" class="w-full h-full object-contain rounded-lg" />
+                  </div>
+                  <div class="relative h-40 sm:h-48 rounded-xl overflow-hidden bg-neutral-100 dark:bg-[#1c1c1c] flex items-center justify-center p-2">
+                    <img src="assets/img/kianso_stats.png" alt="KiAnSo Automated Statistical Comparison Dashboard" class="w-full h-full object-contain rounded-lg" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-5 sm:p-6 flex flex-col flex-1 justify-between">
+                <div>
+                  <h3 class="text-2xl font-bold text-[#191919] dark:text-white mb-1">KiAnSo</h3>
+                  <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">Kinematic Analysis & Computer Vision Software</p>
+                  <p class="text-gray-700 dark:text-gray-300 mb-6 text-sm leading-relaxed">
+                    Kinematic analysis software developed at the Brain Plasticity Lab (CNRS / ESPCI-PSL) for behavioral neuroscience on Drosophila. Built from scratch in Python to replace a legacy tool, it models embryonic spasms and adult locomotion using Farnebäck dense optical flow, robust signal filtering (Hampel and Savitzky-Golay), and batch processing, delivering a 500% throughput increase and saving over 45 hours per experimental run.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between flex-wrap gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800/80">
+                  <span class="text-xs font-semibold text-gray-500 dark:text-gray-400">September 2026</span>
+                  <div class="flex flex-wrap gap-1.5">
+                    <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">Python</span>
+                    <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">OpenCV</span>
+                    <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">Computer Vision</span>
+                    <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">Kinematics</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 3: AILAPS -->
+            <div class="w-full border border-neutral-200 dark:border-neutral-800/80 bg-white dark:bg-[#141414] rounded-2xl overflow-hidden flex flex-col shadow-sm order-3 md:order-none">
+              <div class="p-2.5 sm:p-3 pb-0">
+                <div class="grid grid-cols-2 gap-2">
+                  <div class="relative h-56 sm:h-64 rounded-xl overflow-hidden bg-neutral-100 dark:bg-[#1c1c1c] flex items-center justify-center p-2">
+                    <img src="assets/img/ailapsloading.jpg" alt="AILAPS Prototype on Hand" class="w-full h-full object-contain rounded-lg" />
+                  </div>
+                  <div class="relative h-56 sm:h-64 rounded-xl overflow-hidden bg-neutral-100 dark:bg-[#1c1c1c] flex items-center justify-center p-2">
+                    <img src="assets/img/ailapsfinishedonefinger.png" alt="AILAPS Actuation Unit" class="w-full h-full object-contain rounded-lg" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-5 sm:p-6 flex flex-col flex-1 justify-between">
+                <div>
+                  <h3 class="text-2xl font-bold text-[#191919] dark:text-white mb-1">AILAPS</h3>
+                  <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">Active Hand Exoskeleton</p>
+                  <p class="text-gray-700 dark:text-gray-300 mb-6 text-sm leading-relaxed">
+                    Motorized active hand exoskeleton prototype developed for rehabilitation and assistance with everyday muscular weakness. Integrates custom compliant linkages, embedded driver electronics, and deterministic actuation.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between flex-wrap gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800/80">
+                  <span class="text-xs font-semibold text-gray-500 dark:text-gray-400">May 2026</span>
+                  <div class="flex flex-wrap gap-1.5">
+                    <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">Bio-Mechanics</span>
+                    <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">SolidWorks</span>
+                    <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">Embedded C</span>
+                    <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">Actuation</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 5: Cuicui -->
+            <div class="w-full border border-neutral-200 dark:border-neutral-800/80 bg-white dark:bg-[#141414] rounded-2xl overflow-hidden flex flex-col shadow-sm order-5 md:order-none">
+              <div class="p-2.5 sm:p-3 pb-0">
+                <div class="grid grid-cols-2 gap-2">
+                  <div class="relative h-44 sm:h-52 rounded-xl overflow-hidden bg-neutral-100 dark:bg-[#1c1c1c] flex items-center justify-center p-2">
+                    <img src="assets/img/cuicui.jpg" alt="Cuicui Connector" class="w-full h-full object-contain rounded-lg" />
+                  </div>
+                  <div class="relative h-44 sm:h-52 rounded-xl overflow-hidden bg-neutral-100 dark:bg-[#1c1c1c] flex items-center justify-center p-2">
+                    <img src="assets/img/cuicuiidea.jpg" alt="Cuicui Mold Plaster" class="w-full h-full object-contain rounded-lg" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-5 sm:p-6 flex flex-col flex-1 justify-between">
+                <div>
+                  <h3 class="text-2xl font-bold text-[#191919] dark:text-white mb-1">Cuicui</h3>
+                  <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">Upper-Limb Pediatric Prosthetic Device</p>
+                  <p class="text-gray-700 dark:text-gray-300 mb-6 text-sm leading-relaxed">
+                    Custom mechanical prosthetic device developed for a young child with congenital limb agenesis who wanted to ride a bike. Designed from direct alginate and plaster limb casting, prioritizing practical usability for the girl, lightweight comfort, and reliable mechanical handlebar control without external power.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between flex-wrap gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800/80">
+                  <span class="text-xs font-semibold text-gray-500 dark:text-gray-400">June 2023</span>
+                  <div class="flex flex-wrap gap-1.5">
+                    <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">Biomechanics</span>
+                    <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">Prototyping</span>
+                    <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">Real Case</span>
+                    <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">3D Printing</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right Column on Desktop (OptoStim, Scotchouille, Louya) -->
+          <div class="contents md:flex md:flex-col md:gap-8 md:flex-1 md:min-w-0">
+
+            <!-- Card 2: OptoStim -->
+            <div class="w-full border border-neutral-200 dark:border-neutral-800/80 bg-white dark:bg-[#141414] rounded-2xl overflow-hidden flex flex-col shadow-sm order-2 md:order-none">
+              <div class="p-2.5 sm:p-3 pb-0">
+                <div class="grid grid-cols-2 gap-2">
+                  <div class="relative h-40 sm:h-48 rounded-xl overflow-hidden bg-neutral-100 dark:bg-[#1c1c1c] flex items-center justify-center p-2">
+                    <img src="assets/img/optostim_bench.jpg" alt="Optogenetics Photostimulation Bench Rig" class="w-full h-full object-contain rounded-lg" />
+                  </div>
+                  <div class="relative h-40 sm:h-48 rounded-xl overflow-hidden bg-neutral-100 dark:bg-[#1c1c1c] flex items-center justify-center p-2">
+                    <img src="assets/img/optostim_matrix.jpg" alt="OptoStim Custom LED Matrix and Driver Board" class="w-full h-full object-contain rounded-lg" />
+                  </div>
+                  <div class="relative h-40 sm:h-48 rounded-xl overflow-hidden bg-neutral-100 dark:bg-[#1c1c1c] flex items-center justify-center p-2">
+                    <img src="assets/img/optostim_rig.jpg" alt="OptoStim Extruded Aluminum Rig Structure" class="w-full h-full object-contain rounded-lg" />
+                  </div>
+                  <div class="relative h-40 sm:h-48 rounded-xl overflow-hidden bg-neutral-100 dark:bg-[#1c1c1c] flex items-center justify-center p-2">
+                    <img src="assets/img/optostim_electronics.jpg" alt="OptoStim Electronic Integration &amp; Wiring" class="w-full h-full object-contain rounded-lg" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-5 sm:p-6 flex flex-col flex-1 justify-between">
+                <div>
+                  <h3 class="text-2xl font-bold text-[#191919] dark:text-white mb-1">OptoStim</h3>
+                  <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">Optogenetics Bench & Synchronized Video Acquisition</p>
+                  <p class="text-gray-700 dark:text-gray-300 mb-6 text-sm leading-relaxed">
+                    Automated optogenetic photostimulation and high-speed video acquisition platform designed for Drosophila behavioral neuroscience at the Brain Plasticity Lab (CNRS / ESPCI-PSL). Engineered the full software architecture in Python and Flask, integrating programmable pulse trains and automated pre/post-stimulus video capture synchronization. Directly interfaced with embedded microcontrollers and coupled to the KiAnSo analysis suite for millisecond-accurate behavioral response tracking.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between flex-wrap gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800/80">
+                  <span class="text-xs font-semibold text-gray-500 dark:text-gray-400">September 2026</span>
+                  <div class="flex flex-wrap gap-1.5">
+                    <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">Python</span>
+                    <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">Flask</span>
+                    <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">Hardware / IoT</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 4: Scotchouille -->
+            <div class="w-full border border-neutral-200 dark:border-neutral-800/80 bg-white dark:bg-[#141414] rounded-2xl overflow-hidden flex flex-col shadow-sm order-4 md:order-none">
+              <div class="p-2.5 sm:p-3 pb-0">
+                <div class="grid grid-cols-2 gap-2">
+                  <div class="relative h-56 sm:h-64 rounded-xl overflow-hidden bg-neutral-100 dark:bg-[#1c1c1c] flex items-center justify-center p-2">
+                    <img src="assets/img/scotcchouilletop.png" alt="Scotchouille Rover Front" class="w-full h-full object-contain rounded-lg" />
+                  </div>
+                  <div class="relative h-56 sm:h-64 rounded-xl overflow-hidden bg-neutral-100 dark:bg-[#1c1c1c] flex items-center justify-center p-2">
+                    <img src="assets/img/scotchouilleside.jpg" alt="Scotchouille Rover Profile" class="w-full h-full object-contain rounded-lg" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-5 sm:p-6 flex flex-col flex-1 justify-between">
+                <div>
+                  <h3 class="text-2xl font-bold text-[#191919] dark:text-white mb-1">Scotchouille</h3>
+                  <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">Autonomous Mobile Rover</p>
+                  <p class="text-gray-700 dark:text-gray-300 mb-6 text-sm leading-relaxed">
+                    Tournament-winning autonomous competition robot. Equipped with differential drive kinematics, live computer vision ball detection, dynamic trajectory planning, and a high-velocity projectile launching mechanism.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between flex-wrap gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800/80">
+                  <span class="text-xs font-semibold text-gray-500 dark:text-gray-400">June 2025</span>
+                  <div class="flex flex-wrap gap-1.5">
+                    <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">Python</span>
+                    <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">Computer Vision</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 6: Louya -->
+            <div class="w-full border border-neutral-200 dark:border-neutral-800/80 bg-white dark:bg-[#141414] rounded-2xl overflow-hidden flex flex-col shadow-sm order-6 md:order-none">
+              <div class="p-2.5 sm:p-3 pb-0">
+                <div class="relative h-56 sm:h-64 rounded-xl overflow-hidden bg-neutral-100 dark:bg-[#1c1c1c] flex items-center justify-center p-2">
+                  <img src="assets/img/louya.jpg" alt="Louya Highly Modded 3D Printer" class="w-full h-full object-contain rounded-lg" />
+                </div>
+              </div>
+
+              <div class="p-5 sm:p-6 flex flex-col flex-1 justify-between">
+                <div>
+                  <h3 class="text-2xl font-bold text-[#191919] dark:text-white mb-1">Louya</h3>
+                  <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">Custom Creality CR-10</p>
+                  <p class="text-gray-700 dark:text-gray-300 mb-6 text-sm leading-relaxed">
+                    Heavily modified Creality CR-10 upgraded over the years with a custom direct-drive setup, all-metal hotend, and tuned firmware. To be honest, I end up breaking it almost every print trying to over-optimize things that were working just fine, which is never a good idea, but definitely where the real hands-on learning happens.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between flex-wrap gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800/80">
+                  <span class="text-xs font-semibold text-gray-500 dark:text-gray-400">December 2016</span>
+                  <div class="flex flex-wrap gap-1.5">
+                    <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">Prototyping</span>
+                    <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">Materials</span>
+                    <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">Firmware</span>
+                    <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">DFM/DFA</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <section id="cad-models" class="pt-32 pb-16 bg-gray-50 dark:bg-[#121212] transition-colors duration-300">
+      <div class="max-w-7xl mx-auto px-6 sm:px-12">
+        
+        <div class="mb-16 sm:mb-20">
+          <div class="flex items-end gap-6 sm:gap-8">
+            <h2 class="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white whitespace-nowrap">CAD Models</h2>
+            <div class="h-[3px] w-full bg-gray-900/30 dark:bg-white/30 mb-2"></div>
+          </div>
+        </div>
+
+        <div class="border border-dashed border-neutral-300 dark:border-neutral-800 rounded-2xl p-12 sm:p-16 text-center bg-white/40 dark:bg-[#141414]/40">
+          <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Work in progress</p>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="experiments" class="pt-32 pb-16 bg-gray-50 dark:bg-[#121212] transition-colors duration-300">
+      <div class="max-w-7xl mx-auto px-6 sm:px-12">
+        
+        <div class="mb-16 sm:mb-20">
+          <div class="flex items-end gap-6 sm:gap-8">
+            <h2 class="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white whitespace-nowrap">Experiments</h2>
+            <div class="h-[3px] w-full bg-gray-900/30 dark:bg-white/30 mb-2"></div>
+          </div>
+        </div>
+
+        <div class="border border-neutral-200 dark:border-neutral-800/80 bg-white dark:bg-[#141414] rounded-2xl overflow-hidden shadow-sm">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-0">
+            
+            <div class="lg:col-span-5 p-4 sm:p-6 bg-neutral-100 dark:bg-[#1c1c1c] flex items-center justify-center">
+              <div class="relative w-full rounded-xl overflow-hidden shadow-sm">
+                <img src="assets/img/tosscoin.gif" alt="3D Coin-Toss Tracking Simulator with Orocos BFL" class="w-full h-auto object-cover rounded-lg" />
+              </div>
+            </div>
+
+            <div class="lg:col-span-7 p-6 sm:p-8 flex flex-col justify-between">
+              <div>
+                <div class="mb-3">
+                  <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">State Estimation &amp; Bayesian Filtering</span>
+                </div>
+
+                <h3 class="text-2xl sm:text-3xl font-bold text-[#191919] dark:text-white mb-4">
+                  Can we predict the outcome of a coin toss in mid-air?
+                </h3>
+
+                <div class="space-y-4 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                  <p>
+                    Lately, I’ve been diving into state estimation and the Orocos ecosystem in ROS. To challenge myself beyond standard 2D robot localization, I built a 3D coin-toss tracking simulator in C++ using OpenCV and Orocos BFL (Bayesian Filtering Library).
+                  </p>
+                  <p>
+                    A coin toss isn't random magic, but pure deterministic physics. If a coin is launched with a vertical velocity of 4.5 m/s and a spin rate of 6 Hz, its trajectory is mathematically pre-determined. If you can estimate the state vector in the first milliseconds of flight, you can calculate the landing face before impact.
+                  </p>
+                  <p>
+                    I set up a 4D state vector X = [z; dz; theta; omega]. Under a simulated 30 Hz camera with Gaussian measurement noise (R = 0.25 px²), I benchmarked two BFL estimators: an EKF (with hand-calculated Jacobians) and an SMC Particle Filter (with about 600 particles).
+                  </p>
+                  <p>
+                    The EKF was incredibly fast, executing in just 0.04 ms per step. It locked onto the 37.7 rad/s spin in 5 frames (~166 ms of flight), dropping estimation error to &lt;1.2% while the tracking covariance fell from 10.0 to 0.04. The Particle Filter took 4.2 ms per step; though slower, it handled temporary face occlusions perfectly by tracking multi-modal probability distributions before collapsing them.
+                  </p>
+                  <p>
+                    Testing the camera's observability limits revealed a fascinating control theory trap. At a 45° viewing angle, the EKF prediction accuracy reached 96.4% after 200 ms. Whereas at a 90° angle (looking directly at the coin's thin edge), the Jacobian became ill-conditioned. The covariance exploded from 0.01 to 4.2, and prediction accuracy collapsed to 51.5% which is essentially a random guess.
+                  </p>
+                  <p>
+                    I also loved BFL's "honest" confidence. Flat landings yielded 98% confidence, but edge landings (vertical impact) dropped the EKF's confidence to 54%. The filter literally knows when it doesn't know.
+                  </p>
+                  <p>
+                    In the real world, a 30 FPS webcam would just capture a gray motion blur. You'd need a nice industrial camera or event-based sensors. Plus, timing is brutal because at 5 Hz, a 15 ms catch-height timing error shifts the predicted angle by 26°, flipping a predicted "Heads" to a physical "Tails". But in a controlled setup (like conveyor belt sorting), it's totally viable.
+                  </p>
+                  <p class="font-medium text-gray-900 dark:text-white">
+                    This was a great way get hands-on experience with BFL before I move onto Orocos KDL and iTaSC.
+                  </p>
+                </div>
+              </div>
+
+              <div class="pt-6 mt-6 border-t border-neutral-100 dark:border-neutral-800/80 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex flex-wrap gap-1.5">
+                  <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">C++</span>
+                  <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">Orocos BFL</span>
+                  <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">Extended Kalman Filter</span>
+                  <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">Particle Filter</span>
+                  <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">OpenCV</span>
+                  <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">Computer Vision</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="contact" class="pt-32 pb-24 bg-gray-50 dark:bg-[#121212] transition-colors duration-300">
+      <div class="max-w-7xl mx-auto px-6 sm:px-12">
+        
+        <div class="mb-16 sm:mb-20">
+          <div class="flex items-end gap-6 sm:gap-8">
+            <h2 class="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white whitespace-nowrap">Contact</h2>
+            <div class="h-[3px] w-full bg-gray-900/30 dark:bg-white/30 mb-2"></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16">
+          
+          <div>
+            <div class="mb-8">
+              <div class="flex items-center gap-4 mb-6">
+                <div class="relative w-24 h-24 rounded-2xl overflow-hidden border border-neutral-200 dark:border-neutral-800 p-1 bg-white dark:bg-[#181818] flex-shrink-0 shadow-sm">
+                  <img src="assets/img/leho-dehove.jpg" alt="Lého Dehove" class="w-full h-full object-cover object-top rounded-xl" />
+                </div>
+                <div>
+                  <h3 class="text-2xl sm:text-[1.85rem] font-bold text-[#191919] dark:text-white mb-1">Lého Dehove</h3>
+                  
+                  <span class="inline-flex items-center px-3.5 py-1 rounded-full bg-neutral-100 dark:bg-[#1f1f1f] border border-neutral-200 dark:border-neutral-700 text-xs font-semibold uppercase tracking-wider text-gray-800 dark:text-gray-200 shadow-sm">
+                    Open to work
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-6">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-[#191919] dark:text-white mb-4">Direct links</h4>
+              <div class="flex flex-wrap gap-2">
+                
+                <a href="https://linkedin.com/in/leho-dehove" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#0A66C2] text-white text-xs font-bold uppercase tracking-wider shadow-sm">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"></path>
+                  </svg>
+                  <span>LinkedIn</span>
+                </a>
+
+                <a href="https://github.com/DehoveLeho" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-neutral-900 dark:border-white bg-[#191919] dark:bg-white text-white dark:text-[#191919] text-xs font-bold uppercase tracking-wider shadow-sm">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path>
+                  </svg>
+                  <span>GitHub</span>
+                </a>
+
+              </div>
+            </div>
+
+            <a href="mailto:lehodehove@gmail.com" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-[#222222] text-gray-800 dark:text-gray-200 text-xs font-semibold shadow-sm">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 512 512">
+                <path d="M48 64C21.5 64 0 85.5 0 112c0 15.1 7.1 29.3 19.2 38.4L236.8 313.6c11.4 8.5 27 8.5 38.4 0L492.8 150.4c12.1-9.1 19.2-23.3 19.2-38.4c0-26.5-21.5-48-48-48L48 64zM0 176L0 384c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-208L294.4 339.2c-22.8 17.1-54 17.1-76.8 0L0 176z"></path>
+              </svg>
+              <span>lehodehove@gmail.com</span>
+            </a>
+          </div>
+
+          <div class="lg:col-span-2">
+            <h3 class="text-2xl sm:text-[2rem] font-bold text-[#191919] dark:text-white mb-4">Send me a message</h3>
+            
+            <form id="contactForm" class="space-y-3" onsubmit="handleContactSubmit(event)">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input type="text" id="nomInput" placeholder="Last Name" required class="px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-neutral-900 dark:focus:border-white transition-colors shadow-sm" />
+                <input type="text" id="prenomInput" placeholder="First Name" required class="px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-neutral-900 dark:focus:border-white transition-colors shadow-sm" />
+              </div>
+              <input type="email" id="emailInput" placeholder="Email" required class="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-neutral-900 dark:focus:border-white transition-colors shadow-sm" />
+              <textarea id="messageInput" placeholder="Message" rows="5" required class="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-neutral-900 dark:focus:border-white transition-colors resize-none shadow-sm"></textarea>
+              
+              <div class="flex items-center gap-4">
+                <button type="submit" id="submitBtn" class="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-neutral-900 dark:border-white bg-[#191919] dark:bg-white text-white dark:text-[#191919] text-xs font-bold uppercase tracking-wider cursor-pointer shadow-sm">
+                  <span>Send</span>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                  </svg>
+                </button>
+                <span id="formFeedback" class="text-xs font-medium text-emerald-600 dark:text-emerald-400 hidden"></span>
+              </div>
+            </form>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <footer class="bg-white dark:bg-[#0d0d0d] border-t border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
+      <div class="max-w-7xl mx-auto px-6 sm:px-12 py-10 sm:py-12">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 sm:mb-10">
+          
+          <div>
+            <h3 class="text-xs font-bold uppercase tracking-wider mb-4 text-gray-900 dark:text-white">Navigation</h3>
+            <ul class="space-y-2.5 text-sm font-medium">
+              <li><a href="#" class="text-gray-700 dark:text-gray-300">Home</a></li>
+              <li><a href="#about" class="text-gray-700 dark:text-gray-300">About</a></li>
+              <li><a href="#projects" class="text-gray-700 dark:text-gray-300">Projects</a></li>
+              <li><a href="#cad-models" class="text-gray-700 dark:text-gray-300">CAD Models</a></li>
+              <li><a href="#experiments" class="text-gray-700 dark:text-gray-300">Experiments</a></li>
+              <li><a href="#contact" class="text-gray-700 dark:text-gray-300">Contact</a></li>
+            </ul>
+          </div>
+
+
+          <div>
+            <h3 class="text-xs font-bold uppercase tracking-wider mb-4 text-gray-900 dark:text-white">Contact & Links</h3>
+            <div class="mb-3">
+              <a href="mailto:lehodehove@gmail.com" class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
+                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
+                </svg>
+                lehodehove@gmail.com
+              </a>
+            </div>
+            <div class="mb-4">
+              <div class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                </svg>
+                Paris, France
+              </div>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Follow :</p>
+              <div class="flex gap-3">
+                <a href="https://linkedin.com/in/leho-dehove" target="_blank" rel="noopener noreferrer" class="w-6 h-6 flex items-center justify-center text-gray-900 dark:text-white" aria-label="LinkedIn">
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"></path></svg>
+                </a>
+                <a href="https://github.com/DehoveLeho" target="_blank" rel="noopener noreferrer" class="w-6 h-6 flex items-center justify-center text-gray-900 dark:text-white" aria-label="GitHub">
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path></svg>
+                </a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="border-t border-gray-200 dark:border-gray-800 pt-6 text-center text-xs text-gray-500 dark:text-gray-400">
+          <p>© 2026 Lého Dehove. All rights reserved.</p>
+        </div>
+
+      </div>
+    </footer>
+
+  </main>
+
+  <script>
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenuDropdown = document.getElementById('mobileMenuDropdown');
+    const burgerTop = document.getElementById('burger-top');
+    const burgerMid = document.getElementById('burger-mid');
+    const burgerBot = document.getElementById('burger-bot');
+
+    if (mobileMenuBtn && mobileMenuDropdown) {
+      mobileMenuBtn.addEventListener('click', () => {
+        const isOpen = !mobileMenuDropdown.classList.contains('hidden');
+        if (isOpen) {
+          mobileMenuDropdown.classList.add('hidden');
+          mobileMenuDropdown.classList.remove('flex');
+          burgerTop.classList.remove('rotate-45', 'translate-y-1.5');
+          burgerMid.classList.remove('opacity-0');
+          burgerBot.classList.remove('-rotate-45', '-translate-y-1.5');
+        } else {
+          mobileMenuDropdown.classList.remove('hidden');
+          mobileMenuDropdown.classList.add('flex');
+          burgerTop.classList.add('rotate-45', 'translate-y-1.5');
+          burgerMid.classList.add('opacity-0');
+          burgerBot.classList.add('-rotate-45', '-translate-y-1.5');
+        }
+      });
+
+      document.querySelectorAll('.mobileNavLink').forEach(link => {
+        link.addEventListener('click', () => {
+          mobileMenuDropdown.classList.add('hidden');
+          mobileMenuDropdown.classList.remove('flex');
+          burgerTop.classList.remove('rotate-45', 'translate-y-1.5');
+          burgerMid.classList.remove('opacity-0');
+          burgerBot.classList.remove('-rotate-45', '-translate-y-1.5');
+        });
+      });
+    }
+
+    const mainNavbar = document.getElementById('mainNavbar');
+    function updateNavbarVisibility() {
+      if (!mainNavbar) return;
+      if (window.scrollY > 80) {
+        mainNavbar.classList.add('-translate-y-28', 'opacity-0', 'pointer-events-none');
+        if (mobileMenuDropdown && !mobileMenuDropdown.classList.contains('hidden')) {
+          mobileMenuDropdown.classList.add('hidden');
+          mobileMenuDropdown.classList.remove('flex');
+          if (burgerTop) burgerTop.classList.remove('rotate-45', 'translate-y-1.5');
+          if (burgerMid) burgerMid.classList.remove('opacity-0');
+          if (burgerBot) burgerBot.classList.remove('-rotate-45', '-translate-y-1.5');
+        }
+      } else {
+        mainNavbar.classList.remove('-translate-y-28', 'opacity-0', 'pointer-events-none');
+      }
+    }
+    window.addEventListener('scroll', updateNavbarVisibility, { passive: true });
+    updateNavbarVisibility();
+
+    async function handleContactSubmit(e) {
+      e.preventDefault();
+      const nom = document.getElementById('nomInput').value.trim();
+      const prenom = document.getElementById('prenomInput').value.trim();
+      const email = document.getElementById('emailInput').value.trim();
+      const message = document.getElementById('messageInput').value.trim();
+      const submitBtn = document.getElementById('submitBtn');
+      const btnText = submitBtn.querySelector('span');
+      const feedback = document.getElementById('formFeedback');
+
+      btnText.textContent = "Sending...";
+      submitBtn.disabled = true;
+
+      try {
+        const response = await fetch("https://formsubmit.co/ajax/lehodehove@gmail.com", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify({
+            name: `${prenom} ${nom}`,
+            email: email,
+            message: message,
+            _subject: `New Portfolio Message from ${prenom} ${nom}`
+          })
+        });
+
+        if (response.ok) {
+          feedback.textContent = "Message sent successfully! Thank you.";
+          feedback.className = "text-sm font-medium text-emerald-600 dark:text-emerald-400";
+          feedback.classList.remove('hidden');
+          document.getElementById('contactForm').reset();
+          btnText.textContent = "Sent!";
+          setTimeout(() => {
+            btnText.textContent = "Send";
+            submitBtn.disabled = false;
+          }, 3000);
+        } else {
+          throw new Error("Submission failed");
+        }
+      } catch (err) {
+        feedback.textContent = "Connecting to email client...";
+        feedback.className = "text-sm font-medium text-amber-500";
+        feedback.classList.remove('hidden');
+
+        const subject = encodeURIComponent(`Portfolio Inquiry from ${prenom} ${nom}`);
+        const body = encodeURIComponent(`Hi Lého,\n\n${message}\n\nFrom: ${prenom} ${nom}\nEmail: ${email}`);
+
+        setTimeout(() => {
+          window.location.href = `mailto:lehodehove@gmail.com?subject=${subject}&body=${body}`;
+          btnText.textContent = "Send";
+          submitBtn.disabled = false;
+        }, 600);
+      }
+    }
+
+    (function initRosTurtles() {
+      const canvas = document.getElementById('heroCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let width, height;
+
+      let turtles = [];
+      const TURTLE_COUNT = 4;
+
+      let exos = [];
+      const EXO_COUNT = 2;
+
+      let particles = [];
+
+      let isDrawing = false;
+      let drawnPath = [];
+      let activeTurtle = null;
+
+      let lastTime = performance.now();
+
+      function resize() {
+        const parent = canvas.parentElement;
+        width = canvas.width = parent.offsetWidth;
+        height = canvas.height = parent.offsetHeight;
+        if (turtles.length === 0) spawnTurtles();
+        if (exos.length === 0) spawnExos();
+      }
+
+      function spawnTurtles() {
+        turtles = [];
+        for (let i = 0; i < TURTLE_COUNT; i++) {
+          turtles.push({
+            id: i,
+            x: Math.random() * (width - 160) + 80,
+            y: Math.random() * (height - 160) + 80,
+            theta: Math.random() * Math.PI * 2,
+            linearVel: 1.4,
+            angularVel: 0.05,
+            size: 24,
+            waypoints: [],
+            trail: [],
+            wanderTimer: Math.random() * 100,
+            targetTheta: Math.random() * Math.PI * 2,
+            isSelected: false,
+            penColor: i % 2 === 0 ? '#4caf50' : '#81c784',
+            hasExo: false,
+            exoTimer: 0,
+            equippedExo: null
+          });
+        }
+      }
+
+      function spawnExos() {
+        exos = [];
+        for (let i = 0; i < EXO_COUNT; i++) {
+          exos.push({
+            id: i,
+            x: (width / (EXO_COUNT + 1)) * (i + 1) + (Math.random() - 0.5) * 60,
+            y: Math.random() * (height - 240) + 120,
+            theta: (Math.random() - 0.5) * Math.PI,
+            size: 24,
+            isEquipped: false,
+            equippedTurtle: null,
+            cooldownTimer: 0,
+            pulseAnim: Math.random() * Math.PI * 2
+          });
+        }
+      }
+
+      function createBurst(x, y, color, count = 8, speed = 2.5) {
+        for (let i = 0; i < count; i++) {
+          const angle = (Math.PI * 2 / count) * i + Math.random() * 0.5;
+          const spd = (0.5 + Math.random() * 0.8) * speed;
+          particles.push({
+            x: x,
+            y: y,
+            vx: Math.cos(angle) * spd,
+            vy: Math.sin(angle) * spd,
+            life: 1.0,
+            decay: 0.03 + Math.random() * 0.02,
+            size: 2 + Math.random() * 2,
+            color: color
+          });
+        }
+      }
+
+      function drawExoGround(exo) {
+        if (exo.isEquipped) return;
+
+        ctx.save();
+        ctx.translate(exo.x, exo.y);
+        ctx.rotate(exo.theta);
+
+        const s = exo.size;
+        const pulse = 1 + Math.sin(exo.pulseAnim) * 0.05;
+
+        ctx.beginPath();
+        ctx.arc(0, 0, s * 1.5 * pulse, 0, Math.PI * 2);
+        if (exo.cooldownTimer > 0) {
+          ctx.strokeStyle = 'rgba(245, 158, 11, 0.4)';
+          ctx.setLineDash([3, 3]);
+        } else {
+          ctx.strokeStyle = 'rgba(14, 165, 233, 0.45)';
+          ctx.setLineDash([5, 4]);
+        }
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.font = '9px monospace';
+        ctx.textAlign = 'center';
+        if (exo.cooldownTimer > 0) {
+          ctx.fillStyle = 'rgba(245, 158, 11, 0.85)';
+          ctx.fillText(`COOLDOWN ${exo.cooldownTimer.toFixed(1)}s`, 0, -s * 1.75);
+        } else {
+          ctx.fillStyle = 'rgba(14, 165, 233, 0.9)';
+          ctx.fillText('EXO-FRAME', 0, -s * 1.75);
+        }
+
+        ctx.strokeStyle = '#0284c7';
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(-s * 0.65, 0);
+        ctx.lineTo(s * 0.55, 0);
+        ctx.stroke();
+
+        ctx.fillStyle = '#0369a1';
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(-s * 0.25, -s * 0.22, s * 0.5, s * 0.44, 3);
+        else ctx.rect(-s * 0.25, -s * 0.22, s * 0.5, s * 0.44);
+        ctx.fill();
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+
+        ctx.fillStyle = exo.cooldownTimer > 0 ? '#f59e0b' : '#38bdf8';
+        ctx.beginPath();
+        ctx.arc(0, 0, s * 0.1, 0, Math.PI * 2);
+        ctx.fill();
+
+        const braceArms = [
+          { bx: s * 0.2, by: -s * 0.22, ex: s * 0.55, ey: -s * 0.65 },
+          { bx: s * 0.2, by: s * 0.22, ex: s * 0.55, ey: s * 0.65 },
+          { bx: -s * 0.25, by: -s * 0.18, ex: -s * 0.55, ey: -s * 0.55 },
+          { bx: -s * 0.25, by: s * 0.18, ex: -s * 0.55, ey: s * 0.55 }
+        ];
+
+        braceArms.forEach(arm => {
+          ctx.strokeStyle = '#0ea5e9';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(arm.bx, arm.by);
+          ctx.lineTo(arm.ex, arm.ey);
+          ctx.stroke();
+
+          ctx.strokeStyle = '#38bdf8';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(arm.ex, arm.ey, s * 0.15, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(14, 165, 233, 0.25)';
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(arm.bx, arm.by, 2, 0, Math.PI * 2);
+          ctx.arc(arm.ex, arm.ey, 2, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        ctx.restore();
+      }
+
+      function drawRosTurtle(t) {
+        ctx.save();
+        ctx.translate(t.x, t.y);
+        ctx.rotate(t.theta);
+
+        const s = t.size;
+
+        if (t.isSelected || t.waypoints.length > 0) {
+          ctx.beginPath();
+          ctx.arc(0, 0, s * 1.35, 0, Math.PI * 2);
+          ctx.strokeStyle = t.hasExo ? 'rgba(14, 165, 233, 0.85)' : 'rgba(76, 175, 80, 0.7)';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([4, 3]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(-s * 0.65, 0);
+        ctx.lineTo(-s * 0.95, -s * 0.15);
+        ctx.lineTo(-s * 0.95, s * 0.15);
+        ctx.closePath();
+        ctx.fillStyle = '#2e7d32';
+        ctx.fill();
+
+        ctx.fillStyle = '#4caf50';
+        ctx.beginPath();
+        ctx.ellipse(s * 0.35, -s * 0.58, s * 0.32, s * 0.16, -Math.PI / 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(s * 0.35, s * 0.58, s * 0.32, s * 0.16, Math.PI / 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(-s * 0.42, -s * 0.5, s * 0.26, s * 0.14, Math.PI / 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(-s * 0.42, s * 0.5, s * 0.26, s * 0.14, -Math.PI / 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.ellipse(s * 0.75, 0, s * 0.3, s * 0.22, 0, 0, Math.PI * 2);
+        ctx.fillStyle = '#66bb6a';
+        ctx.fill();
+        ctx.strokeStyle = '#1b5e20';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+
+        ctx.fillStyle = '#1b5e20';
+        ctx.beginPath();
+        ctx.arc(s * 0.85, -s * 0.09, s * 0.05, 0, Math.PI * 2);
+        ctx.arc(s * 0.85, s * 0.09, s * 0.05, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.ellipse(0, 0, s * 0.65, s * 0.52, 0, 0, Math.PI * 2);
+        ctx.fillStyle = '#2e7d32';
+        ctx.fill();
+        ctx.strokeStyle = '#1b5e20';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.strokeStyle = 'rgba(200, 230, 201, 0.75)';
+        ctx.lineWidth = 1.1;
+        ctx.beginPath();
+        ctx.moveTo(s * 0.24, 0);
+        ctx.lineTo(s * 0.1, -s * 0.24);
+        ctx.lineTo(-s * 0.14, -s * 0.24);
+        ctx.lineTo(-s * 0.24, 0);
+        ctx.lineTo(-s * 0.14, s * 0.24);
+        ctx.lineTo(s * 0.1, s * 0.24);
+        ctx.closePath();
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(s * 0.24, 0); ctx.lineTo(s * 0.63, 0);
+        ctx.moveTo(-s * 0.24, 0); ctx.lineTo(-s * 0.63, 0);
+        ctx.moveTo(s * 0.1, -s * 0.24); ctx.lineTo(s * 0.26, -s * 0.48);
+        ctx.moveTo(-s * 0.14, -s * 0.24); ctx.lineTo(-s * 0.32, -s * 0.46);
+        ctx.moveTo(s * 0.1, s * 0.24); ctx.lineTo(s * 0.26, -s * 0.48);
+        ctx.moveTo(-s * 0.14, s * 0.24); ctx.lineTo(-s * 0.32, s * 0.46);
+        ctx.stroke();
+
+        if (t.hasExo) {
+          const exoLimbs = [
+            { bx: s * 0.18, by: -s * 0.18, mx: s * 0.3, my: -s * 0.42, ex: s * 0.42, ey: -s * 0.62 },
+            { bx: s * 0.18, by: s * 0.18, mx: s * 0.3, my: s * 0.42, ex: s * 0.42, ey: s * 0.62 },
+            { bx: -s * 0.18, by: -s * 0.14, mx: -s * 0.32, my: -s * 0.36, ex: -s * 0.46, ey: -s * 0.54 },
+            { bx: -s * 0.18, by: s * 0.14, mx: -s * 0.32, my: s * 0.36, ex: -s * 0.46, ey: s * 0.54 }
+          ];
+
+          exoLimbs.forEach(limb => {
+            ctx.strokeStyle = '#0284c7';
+            ctx.lineWidth = 2.4;
+            ctx.beginPath();
+            ctx.moveTo(limb.bx, limb.by);
+            ctx.lineTo(limb.mx, limb.my);
+            ctx.lineTo(limb.ex, limb.ey);
+            ctx.stroke();
+
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 1.0;
+            ctx.beginPath();
+            ctx.moveTo(limb.bx, limb.by);
+            ctx.lineTo(limb.ex, limb.ey);
+            ctx.stroke();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(limb.bx, limb.by, 2.2, 0, Math.PI * 2);
+            ctx.arc(limb.mx, limb.my, 2.0, 0, Math.PI * 2);
+            ctx.arc(limb.ex, limb.ey, 2.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = '#0ea5e9';
+            ctx.lineWidth = 1.8;
+            ctx.beginPath();
+            ctx.arc(limb.ex, limb.ey, s * 0.14, 0, Math.PI * 2);
+            ctx.stroke();
+          });
+
+          ctx.strokeStyle = '#0284c7';
+          ctx.lineWidth = 3.2;
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(-s * 0.55, 0);
+          ctx.lineTo(s * 0.5, 0);
+          ctx.stroke();
+
+          ctx.fillStyle = '#0f172a';
+          ctx.beginPath();
+          ctx.rect(-s * 0.22, -s * 0.22, s * 0.44, s * 0.44);
+          ctx.fill();
+          ctx.strokeStyle = '#38bdf8';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+          ctx.fillStyle = t.exoTimer < 1.5 ? '#f59e0b' : '#38bdf8';
+          ctx.beginPath();
+          ctx.arc(0, 0, s * 0.11, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.strokeStyle = '#0284c7';
+          ctx.lineWidth = 1.8;
+          ctx.beginPath();
+          ctx.moveTo(-s * 0.35, -s * 0.24); ctx.lineTo(-s * 0.35, s * 0.24);
+          ctx.moveTo(s * 0.32, -s * 0.24); ctx.lineTo(s * 0.32, s * 0.24);
+          ctx.stroke();
+
+          const timerProgress = Math.max(0, Math.min(1, t.exoTimer / 5.0));
+          const hudRadius = s * 1.6;
+          ctx.beginPath();
+          ctx.arc(0, 0, hudRadius, -Math.PI / 2, -Math.PI / 2 + timerProgress * Math.PI * 2);
+          ctx.strokeStyle = t.exoTimer < 1.5 ? '#f59e0b' : '#38bdf8';
+          ctx.lineWidth = 2.2;
+          ctx.stroke();
+
+          ctx.save();
+          ctx.rotate(-t.theta);
+          ctx.font = 'bold 9px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillStyle = t.exoTimer < 1.5 ? '#f59e0b' : '#38bdf8';
+          ctx.fillText(`EXO ${t.exoTimer.toFixed(1)}s`, 0, -hudRadius - 6);
+          ctx.restore();
+        }
+
+        ctx.restore();
+      }
+
+      function updateTurtle(t, dt) {
+        const trailColor = t.hasExo ? '#0ea5e9' : t.penColor;
+        t.trail.push({ x: t.x, y: t.y, life: 1.0, color: trailColor, isExo: t.hasExo });
+        if (t.trail.length > (t.hasExo ? 120 : 90)) t.trail.shift();
+
+        const speedMult = t.hasExo ? 2.5 : 1.0;
+
+        if (!t.hasExo) {
+          for (let exo of exos) {
+            if (!exo.isEquipped && exo.cooldownTimer <= 0) {
+              const dist = Math.hypot(t.x - exo.x, t.y - exo.y);
+              if (dist < t.size * 1.35) {
+                t.hasExo = true;
+                t.exoTimer = 5.0;
+                t.equippedExo = exo;
+                exo.isEquipped = true;
+                exo.equippedTurtle = t;
+                createBurst(t.x, t.y, '#38bdf8', 12, 3.0);
+                break;
+              }
+            }
+          }
+        } else {
+          t.exoTimer -= dt;
+
+          if (Math.random() < 0.25) {
+            particles.push({
+              x: t.x - Math.cos(t.theta) * t.size * 0.8 + (Math.random() - 0.5) * 6,
+              y: t.y - Math.sin(t.theta) * t.size * 0.8 + (Math.random() - 0.5) * 6,
+              vx: -Math.cos(t.theta) * (0.8 + Math.random() * 0.8),
+              vy: -Math.sin(t.theta) * (0.8 + Math.random() * 0.8),
+              life: 0.8,
+              decay: 0.05,
+              size: 2.0,
+              color: '#38bdf8'
+            });
+          }
+
+          if (t.exoTimer <= 0) {
+            t.hasExo = false;
+            if (t.equippedExo) {
+              const exo = t.equippedExo;
+              exo.isEquipped = false;
+              exo.equippedTurtle = null;
+              exo.x = t.x;
+              exo.y = t.y;
+              exo.theta = t.theta;
+              exo.cooldownTimer = 2.0;
+              t.equippedExo = null;
+              createBurst(t.x, t.y, '#94a3b8', 10, 2.0);
+            }
+          }
+        }
+
+        if (t.waypoints.length > 0) {
+          const target = t.waypoints[0];
+          const dx = target.x - t.x;
+          const dy = target.y - t.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < 18 * (t.hasExo ? 1.4 : 1.0)) {
+            t.waypoints.shift();
+            if (t.waypoints.length === 0) {
+              t.isSelected = false;
+            }
+          } else {
+            const targetTheta = Math.atan2(dy, dx);
+            let diff = targetTheta - t.theta;
+            while (diff > Math.PI) diff -= Math.PI * 2;
+            while (diff < -Math.PI) diff += Math.PI * 2;
+
+            const maxTurn = 0.08 * (t.hasExo ? 1.6 : 1.0);
+            t.theta += Math.sign(diff) * Math.min(Math.abs(diff), maxTurn);
+
+            const driveSpeed = (Math.abs(diff) < 1.2 ? 2.5 : 1.0) * speedMult;
+            t.x += Math.cos(t.theta) * driveSpeed;
+            t.y += Math.sin(t.theta) * driveSpeed;
+          }
+        } else {
+          t.wanderTimer--;
+          if (t.wanderTimer <= 0) {
+            t.targetTheta = t.theta + (Math.random() - 0.5) * 1.5;
+            t.wanderTimer = Math.random() * 90 + 40;
+          }
+
+          const pad = 60;
+          if (t.x < pad) t.targetTheta = 0;
+          else if (t.x > width - pad) t.targetTheta = Math.PI;
+          if (t.y < pad) t.targetTheta = Math.PI / 2;
+          else if (t.y > height - pad) t.targetTheta = -Math.PI / 2;
+
+          let diff = t.targetTheta - t.theta;
+          while (diff > Math.PI) diff -= Math.PI * 2;
+          while (diff < -Math.PI) diff += Math.PI * 2;
+          t.theta += Math.sign(diff) * Math.min(Math.abs(diff), 0.035 * (t.hasExo ? 1.5 : 1.0));
+
+          t.x += Math.cos(t.theta) * (1.0 * speedMult);
+          t.y += Math.sin(t.theta) * (1.0 * speedMult);
+        }
+
+        t.x = Math.max(25, Math.min(width - 25, t.x));
+        t.y = Math.max(25, Math.min(height - 25, t.y));
+      }
+
+      function getCanvasPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+        const clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+        return {
+          x: clientX - rect.left,
+          y: clientY - rect.top
+        };
+      }
+
+      function startDraw(e) {
+        const pos = getCanvasPos(e);
+        if (pos.x < 0 || pos.x > width || pos.y < 0 || pos.y > height) return;
+        isDrawing = true;
+        drawnPath = [pos];
+
+        let minDist = Infinity;
+        let chosen = turtles[0];
+        turtles.forEach(t => {
+          t.isSelected = false;
+          const d = Math.hypot(t.x - pos.x, t.y - pos.y);
+          if (d < minDist) {
+            minDist = d;
+            chosen = t;
+          }
+        });
+        activeTurtle = chosen;
+        activeTurtle.isSelected = true;
+      }
+
+      function moveDraw(e) {
+        if (!isDrawing) return;
+        const pos = getCanvasPos(e);
+        const last = drawnPath[drawnPath.length - 1];
+        if (!last || Math.hypot(pos.x - last.x, pos.y - last.y) > 12) {
+          drawnPath.push(pos);
+        }
+      }
+
+      function endDraw() {
+        if (!isDrawing) return;
+        isDrawing = false;
+        if (activeTurtle && drawnPath.length > 1) {
+          activeTurtle.waypoints = [...drawnPath];
+        }
+        drawnPath = [];
+      }
+
+      canvas.addEventListener('mousedown', startDraw);
+      window.addEventListener('mousemove', moveDraw);
+      window.addEventListener('mouseup', endDraw);
+
+      canvas.addEventListener('touchstart', (e) => { startDraw(e); }, { passive: true });
+      window.addEventListener('touchmove', (e) => { moveDraw(e); }, { passive: true });
+      window.addEventListener('touchend', endDraw);
+
+      window.addEventListener('resize', resize);
+      resize();
+
+      function loop(currentTime) {
+        if (!currentTime) currentTime = performance.now();
+        const dt = Math.min((currentTime - lastTime) / 1000, 0.1);
+        lastTime = currentTime;
+
+        ctx.clearRect(0, 0, width, height);
+
+        exos.forEach(exo => {
+          if (exo.cooldownTimer > 0) {
+            exo.cooldownTimer = Math.max(0, exo.cooldownTimer - dt);
+          }
+          exo.pulseAnim += 0.04;
+        });
+
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.life -= p.decay;
+          if (p.life <= 0) {
+            particles.splice(i, 1);
+            continue;
+          }
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+          ctx.fillStyle = p.color;
+          ctx.globalAlpha = p.life * 0.8;
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1.0;
+
+        turtles.forEach(t => {
+          for (let i = 0; i < t.trail.length; i++) {
+            t.trail[i].life -= 0.007;
+          }
+          t.trail = t.trail.filter(pt => pt.life > 0);
+
+          if (t.trail.length > 1) {
+            for (let i = 1; i < t.trail.length; i++) {
+              ctx.beginPath();
+              ctx.moveTo(t.trail[i - 1].x, t.trail[i - 1].y);
+              ctx.lineTo(t.trail[i].x, t.trail[i].y);
+              ctx.strokeStyle = t.trail[i].color || t.penColor;
+              ctx.lineWidth = t.trail[i].isExo ? 2.6 : 1.8;
+              ctx.globalAlpha = t.trail[i].isExo ? (t.trail[i].life * 0.6) : (t.trail[i].life * 0.35);
+              ctx.stroke();
+            }
+            ctx.globalAlpha = 1.0;
+          }
+        });
+
+        exos.forEach(exo => {
+          drawExoGround(exo);
+        });
+
+        if (drawnPath.length > 1) {
+          ctx.beginPath();
+          ctx.moveTo(drawnPath[0].x, drawnPath[0].y);
+          for (let i = 1; i < drawnPath.length; i++) {
+            ctx.lineTo(drawnPath[i].x, drawnPath[i].y);
+          }
+          ctx.strokeStyle = activeTurtle && activeTurtle.hasExo ? '#38bdf8' : '#4caf50';
+          ctx.lineWidth = 2.2;
+          ctx.setLineDash([6, 5]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          const last = drawnPath[drawnPath.length - 1];
+          ctx.beginPath();
+          ctx.arc(last.x, last.y, 6, 0, Math.PI * 2);
+          ctx.fillStyle = activeTurtle && activeTurtle.hasExo ? '#38bdf8' : '#4caf50';
+          ctx.fill();
+        }
+
+        turtles.forEach(t => {
+          if (t.waypoints.length > 0) {
+            ctx.beginPath();
+            ctx.moveTo(t.x, t.y);
+            t.waypoints.forEach(wp => ctx.lineTo(wp.x, wp.y));
+            ctx.strokeStyle = t.hasExo ? 'rgba(14, 165, 233, 0.5)' : 'rgba(76, 175, 80, 0.4)';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([4, 4]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+          }
+        });
+
+        turtles.forEach(t => {
+          updateTurtle(t, dt);
+          drawRosTurtle(t);
+        });
+
+        requestAnimationFrame(loop);
+      }
+
+      loop();
+    })();
+  </script>
+
+</body>
+</html>
