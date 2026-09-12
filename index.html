@@ -547,14 +547,14 @@
               
               <div class="lg:col-span-5 p-4 sm:p-6 bg-neutral-100 dark:bg-[#1c1c1c] flex items-center justify-center">
                 <div class="relative w-full rounded-xl overflow-hidden shadow-sm">
-                  <img src="assets/img/demo_pid_vs_neural.gif" alt="PID vs Neural Control for Slung-Load Quadrotor" class="w-full h-auto object-cover rounded-lg" />
+                  <img src="assets/img/demo_inverted_pendulum.gif" alt="PID vs Neural Inverted Pendulum Benchmark with Perturbation" class="w-full h-auto object-cover rounded-lg" />
                 </div>
               </div>
 
               <div class="lg:col-span-7 p-6 sm:p-8 flex flex-col justify-between">
                 <div>
                   <div class="mb-3">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Control Theory &amp; Embedded Systems</span>
+                    <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Control Theory &amp; Robotics</span>
                   </div>
 
                   <h3 class="text-2xl sm:text-3xl font-bold text-[#191919] dark:text-white mb-4">
@@ -563,19 +563,19 @@
 
                   <div class="space-y-4 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                     <p>
-                      For the past two years in engineering school, I've had PID controllers drilled into my head in virtually every control systems class. I even traveled halfway around the world to Malaysia, studying alternative methods for model identification and parameter tuning. PID is everywhere and over 95% of industrial automation relies on it, but it made me wonder: why don't engineering curriculums show emerging machine learning techniques, like compact Multilayer Perceptrons, for state correction and coupled nonlinear dynamics?
+                      For the past two years in engineering school, I've had PID controllers drilled into my head in virtually every control systems class. I even traveled halfway around the world to Malaysia, studying alternative methods for model identification and parameter tuning. PID is everywhere and over 95% of industrial automation relies on it, but it made me wonder: why don't engineering curriculums show emerging machine learning techniques, like compact Multilayer Perceptrons, for state correction and complex nonlinear systems?
                     </p>
                     <p>
-                      To investigate, I simulated an underactuated robotics benchmark: a quadrotor transporting a cable-suspended payload. When the drone accelerates, the swinging load exerts dynamic horizontal reaction forces back onto the airframe. A standard cascaded PID only reacts to drone position error without anticipating the pendulum phase, causing continuous resonance and a 27.3 cm average tracking miss.
+                      To investigate, I simulated the quintessential benchmark every robotics student knows: the inverted pendulum on a cart. Balancing an unstable pole while tracking position is inherently nonlinear. A classic cascaded PID linearizes around vertical, but when an external 6.5 N push hits, the gravity torque quickly overwhelms the linear assumptions, triggering heavy oscillations and a 21-degree tilt before slowly recovering.
                     </p>
                     <p>
-                      In comparison, a compact 2-layer MLP with just 106 parameters (about eight linear algebra equations in C) takes the full coupled state and executes active anti-swing compensation. It counter-tilts right before arrival to cancel angular momentum, cutting the average miss to 15.5 cm (-43% error) while executing in less than 2.5 microseconds on an embedded ARM Cortex-M4.
+                      In comparison, a compact 2-layer MLP with 106 parameters (eight linear algebra equations in C) captures the full coupled state. When the push occurs, it immediately darts underneath the center of mass to absorb the momentum, limiting tilt to just 7 degrees and stabilizing in 1.2 seconds without prolonged cart ringing.
                     </p>
                     <p>
-                      However, pure machine learning in control has a critical catch: wind drift. According to the Francis-Wonham Internal Model Principle, rejecting a constant disturbance requires an integrator. A feedforward MLP has no memory, so under a 1.4 N crosswind it suffered a permanent 38 cm steady-state offset. Furthermore, if the cable length shifts out-of-distribution, phase lag turns damping into destructive resonance.
+                      However, pure machine learning in control has a critical catch: unmodeled bias. According to the Francis-Wonham Internal Model Principle, rejecting a sustained disturbance requires an integrator. A feedforward MLP has no memory, so under a constant force offset it suffers a permanent steady-state error. And if pole length or mass shifts out-of-distribution, phase mismatch can cause instability.
                     </p>
                     <p class="font-medium text-gray-900 dark:text-white">
-                      The real takeaway isn't throwing away classical control, but hybrid residual architectures: an integral baseline guaranteeing zero steady-state error under wind, paired with a lightweight neural compensator for nonlinear dynamics.
+                      The real takeaway isn't throwing away classical control, but hybrid residual architectures: an integral baseline guaranteeing zero steady-state error, paired with a lightweight neural compensator to arrest sharp perturbations.
                     </p>
                   </div>
                 </div>
@@ -586,7 +586,6 @@
                     <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">PID Controller</span>
                     <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">Neural Network (MLP)</span>
                     <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">Robotics</span>
-                    <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">Embedded Systems</span>
                     <span class="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-mono border border-neutral-200 dark:border-neutral-700">Hybrid Control</span>
                   </div>
                 </div>
