@@ -545,32 +545,44 @@
           <div class="border border-neutral-200 dark:border-neutral-800/80 bg-white dark:bg-[#141414] rounded-2xl overflow-hidden shadow-sm">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-0">
               
-              <div class="lg:col-span-5 p-4 sm:p-6 bg-neutral-100 dark:bg-[#1c1c1c] flex flex-col justify-between">
-                <div>
-                  <!-- Simulation Switcher Buttons -->
-                  <div class="flex items-center gap-2 mb-3">
-                    <button type="button" id="btn-sim-nominal" onclick="selectDroneSim('nominal')" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-sm">
-                      1. Déplacement simple
-                    </button>
-                    <button type="button" id="btn-sim-wind" onclick="selectDroneSim('wind')" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 bg-neutral-200/80 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white">
-                      2. Perturbation vent
-                    </button>
+              <!-- Simulations Column: Sim 1 & Sim 2 displayed directly together -->
+              <div class="lg:col-span-5 xl:col-span-5 p-4 sm:p-6 bg-neutral-100 dark:bg-[#1c1c1c] flex flex-col justify-center gap-6">
+                
+                <!-- Simulation 1: Déplacement simple -->
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider font-mono">1. Déplacement simple</span>
+                    <span class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
+                      Anti-swing (-43% erreur)
+                    </span>
                   </div>
-
-                  <!-- GIF Container -->
-                  <div class="relative w-full rounded-xl overflow-hidden shadow-sm border border-neutral-200/80 dark:border-neutral-800 bg-white dark:bg-[#101010] flex items-center justify-center">
-                    <img id="drone-sim-img" src="assets/img/demo_pid_vs_neural.gif" alt="Simulation Drone PID vs Neural" class="w-full h-auto object-cover rounded-lg" />
+                  <div class="relative w-full rounded-xl overflow-hidden shadow-sm border border-neutral-200/80 dark:border-neutral-800 bg-white dark:bg-[#101010]">
+                    <img src="assets/img/demo_pid_vs_neural.gif" alt="Simulation 1: Déplacement simple - PID vs Neural Anti-Swing" class="w-full h-auto object-cover" />
                   </div>
+                  <p class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight">
+                    Trajectoire A &rarr; B : le PID oscille (27,3 cm d'erreur), le r&eacute;seau anticipe et stoppe net (15,5 cm).
+                  </p>
                 </div>
 
-                <div class="mt-3 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                  <span id="drone-sim-caption" class="font-mono text-[11px] sm:text-xs text-neutral-600 dark:text-neutral-300">
-                    Trajectoire A &rarr; B : PID (oscillations) vs R&eacute;seau (anti-swing)
-                  </span>
-                  <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-neutral-200/80 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
-                    Simulation
-                  </span>
+                <!-- Divider -->
+                <div class="h-px bg-neutral-200 dark:bg-neutral-800"></div>
+
+                <!-- Simulation 2: Perturbation vent -->
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider font-mono">2. Perturbation vent (1.4 N)</span>
+                    <span class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300">
+                      Hybride (+ Intégrateur)
+                    </span>
+                  </div>
+                  <div class="relative w-full rounded-xl overflow-hidden shadow-sm border border-neutral-200/80 dark:border-neutral-800 bg-white dark:bg-[#101010]">
+                    <img src="assets/img/demo_limitations_and_hybrid.gif" alt="Simulation 2: Perturbation vent - Réseau pur vs Hybride" class="w-full h-auto object-cover" />
+                  </div>
+                  <p class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight">
+                    Rafale continue : le r&eacute;seau pur d&eacute;rive sans fin (pas d'int&eacute;grateur), le contr&ocirc;leur hybride annule l'&eacute;cart.
+                  </p>
                 </div>
+
               </div>
 
               <div class="lg:col-span-7 p-6 sm:p-8 flex flex-col justify-between">
@@ -1627,30 +1639,6 @@
 
       loop();
     })();
-  </script>
-
-  <script>
-    function selectDroneSim(mode) {
-      const img = document.getElementById('drone-sim-img');
-      const btnNominal = document.getElementById('btn-sim-nominal');
-      const btnWind = document.getElementById('btn-sim-wind');
-      const caption = document.getElementById('drone-sim-caption');
-      if (!img || !btnNominal || !btnWind || !caption) return;
-
-      if (mode === 'nominal') {
-        img.src = 'assets/img/demo_pid_vs_neural.gif';
-        img.alt = 'Simulation Drone PID vs Neural (Trajectoire nominale)';
-        caption.innerHTML = 'Trajectoire A &rarr; B : PID (oscillations) vs R&eacute;seau (anti-swing)';
-        btnNominal.className = 'px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-sm';
-        btnWind.className = 'px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 bg-neutral-200/80 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white';
-      } else {
-        img.src = 'assets/img/demo_limitations_and_hybrid.gif';
-        img.alt = 'Simulation Drone Perturbation Vent (Réseau pur vs Hybride)';
-        caption.innerHTML = 'Rafale de vent 1.4 N : D&eacute;rive du r&eacute;seau pur vs Correction hybride';
-        btnWind.className = 'px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-sm';
-        btnNominal.className = 'px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 bg-neutral-200/80 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white';
-      }
-    }
   </script>
 
 </body>
