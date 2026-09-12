@@ -545,9 +545,31 @@
           <div class="border border-neutral-200 dark:border-neutral-800/80 bg-white dark:bg-[#141414] rounded-2xl overflow-hidden shadow-sm">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-0">
               
-              <div class="lg:col-span-5 p-4 sm:p-6 bg-neutral-100 dark:bg-[#1c1c1c] flex items-center justify-center">
-                <div class="relative w-full rounded-xl overflow-hidden shadow-sm">
-                  <img src="assets/img/demo_inverted_pendulum.gif" alt="PID vs Neural Inverted Pendulum Benchmark with Perturbation" class="w-full h-auto object-cover rounded-lg" />
+              <div class="lg:col-span-5 p-4 sm:p-6 bg-neutral-100 dark:bg-[#1c1c1c] flex flex-col justify-between">
+                <div>
+                  <!-- Simulation Switcher Buttons -->
+                  <div class="flex items-center gap-2 mb-3">
+                    <button type="button" id="btn-sim-nominal" onclick="selectDroneSim('nominal')" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-sm">
+                      1. Déplacement simple
+                    </button>
+                    <button type="button" id="btn-sim-wind" onclick="selectDroneSim('wind')" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 bg-neutral-200/80 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white">
+                      2. Perturbation vent
+                    </button>
+                  </div>
+
+                  <!-- GIF Container -->
+                  <div class="relative w-full rounded-xl overflow-hidden shadow-sm border border-neutral-200/80 dark:border-neutral-800 bg-white dark:bg-[#101010] flex items-center justify-center">
+                    <img id="drone-sim-img" src="assets/img/demo_pid_vs_neural.gif" alt="Simulation Drone PID vs Neural" class="w-full h-auto object-cover rounded-lg" />
+                  </div>
+                </div>
+
+                <div class="mt-3 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                  <span id="drone-sim-caption" class="font-mono text-[11px] sm:text-xs text-neutral-600 dark:text-neutral-300">
+                    Trajectoire A &rarr; B : PID (oscillations) vs R&eacute;seau (anti-swing)
+                  </span>
+                  <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-neutral-200/80 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+                    Simulation
+                  </span>
                 </div>
               </div>
 
@@ -566,19 +588,19 @@
                       For the past two years in engineering school, I've had PID controllers drilled into my head in virtually every control systems class. I even traveled halfway around the world to Malaysia, studying alternative methods for model identification and parameter tuning. PID is everywhere and over 95% of industrial automation relies on it, but it made me wonder: why don't engineering curriculums show emerging machine learning techniques, like compact Multilayer Perceptrons, for state correction and complex nonlinear systems?
                     </p>
                     <p>
-                      To investigate, I simulated the quintessential benchmark every robotics student knows: the inverted pendulum on a cart. An obvious question arises: couldn't a properly tuned PID achieve the same result? Around the vertical equilibrium (small angles under 5 degrees), absolutely. Linear approximations hold, and a tuned PID is unbeatable without needing any machine learning.
+                      To investigate, I simulated a quadrotor carrying a suspended payload—a notoriously underactuated, nonlinear system where moving the drone excites violent pendular swings. A natural question arises: couldn't a finely tuned PID do just as well? Around small angles (under 5 degrees), absolutely. Linear approximations hold, and a tuned PID provides near-optimal damping without any machine learning.
                     </p>
                     <p>
-                      The wall appears when a large perturbation hits. Under an external 6.5 N push that knocks the pole to 20 degrees, fixed linear gains face an impossible compromise: tune them aggressively to catch large tilts, and the system chatters and saturates motors at rest; tune them smoothly for the center, and the cart can't react fast enough, triggering severe oscillations before slowly recovering.
+                      The problem appears during aggressive maneuvers or large disturbances. Above 20 degrees of tilt, nonlinear centrifugal and Coriolis couplings dominate. Fixed linear gains face an impossible tradeoff: tune aggressively to suppress payload oscillations, and the motors chatter and saturate; tune softly for stability, and the payload swings wildly past the target (27.3 cm average miss).
                     </p>
                     <p>
-                      Control engineers traditionally solve this with manual gain-scheduling tables. In comparison, a compact 2-layer MLP with 106 parameters (eight linear algebra equations in C) acts as a continuous non-linear compensator. It immediately darts under the falling center of mass, limiting tilt to 7 degrees and settling in 1.2 seconds without ringing.
+                      Control engineers traditionally tackle this with gain-scheduling lookup tables. Instead, a compact 2-layer MLP with 106 parameters (eight linear algebra equations in C) acts as a continuous nonlinear compensator. It automatically performs input shaping—counter-pitching half a period before arrival to cancel angular momentum—slashing tracking error by 43% (15.5 cm average miss) with zero oscillatory ringing.
                     </p>
                     <p>
-                      However, pure machine learning in control has a critical catch: unmodeled bias. According to the Francis-Wonham Internal Model Principle, rejecting a sustained disturbance requires an integrator. A feedforward MLP has no memory, so under a constant force offset it suffers a permanent steady-state error. And if pole length or mass shifts out-of-distribution, phase mismatch can cause instability.
+                      However, pure neural control has a fatal blind spot: sustained disturbances. By the Francis-Wonham Internal Model Principle, rejecting a constant external force (like a 1.4 N crosswind) mathematically requires an integrator. Because a feedforward MLP has no internal state, it suffers a permanent steady-state drift under wind.
                     </p>
                     <p class="font-medium text-gray-900 dark:text-white">
-                      The real takeaway isn't throwing away classical control, but hybrid residual architectures: an integral baseline guaranteeing zero steady-state error, paired with a lightweight neural compensator to arrest sharp perturbations.
+                      The winning architecture is hybrid: a classical PID integral baseline guaranteeing zero steady-state error, augmented by a lightweight neural policy to eliminate nonlinear swing.
                     </p>
                   </div>
                 </div>
@@ -1601,7 +1623,29 @@
     })();
   </script>
 
+  <script>
+    function selectDroneSim(mode) {
+      const img = document.getElementById('drone-sim-img');
+      const btnNominal = document.getElementById('btn-sim-nominal');
+      const btnWind = document.getElementById('btn-sim-wind');
+      const caption = document.getElementById('drone-sim-caption');
+      if (!img || !btnNominal || !btnWind || !caption) return;
 
-  
+      if (mode === 'nominal') {
+        img.src = 'assets/img/demo_pid_vs_neural.gif';
+        img.alt = 'Simulation Drone PID vs Neural (Trajectoire nominale)';
+        caption.innerHTML = 'Trajectoire A &rarr; B : PID (oscillations) vs R&eacute;seau (anti-swing)';
+        btnNominal.className = 'px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-sm';
+        btnWind.className = 'px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 bg-neutral-200/80 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white';
+      } else {
+        img.src = 'assets/img/demo_limitations_and_hybrid.gif';
+        img.alt = 'Simulation Drone Perturbation Vent (Réseau pur vs Hybride)';
+        caption.innerHTML = 'Rafale de vent 1.4 N : D&eacute;rive du r&eacute;seau pur vs Correction hybride';
+        btnWind.className = 'px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-sm';
+        btnNominal.className = 'px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 bg-neutral-200/80 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white';
+      }
+    }
+  </script>
+
 </body>
 </html>
