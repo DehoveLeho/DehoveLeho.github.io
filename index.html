@@ -545,44 +545,14 @@
           <div class="border border-neutral-200 dark:border-neutral-800/80 bg-white dark:bg-[#141414] rounded-2xl overflow-hidden shadow-sm">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-0">
               
-              <!-- Simulations Column: Sim 1 & Sim 2 displayed directly together -->
-              <div class="lg:col-span-5 xl:col-span-5 p-4 sm:p-6 bg-neutral-100 dark:bg-[#1c1c1c] flex flex-col justify-center gap-6">
-                
-                <!-- Simulation 1: Déplacement simple -->
-                <div class="space-y-2">
-                  <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider font-mono">1. Déplacement simple</span>
-                    <span class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
-                      Anti-swing (-43% erreur)
-                    </span>
-                  </div>
-                  <div class="relative w-full rounded-xl overflow-hidden shadow-sm border border-neutral-200/80 dark:border-neutral-800 bg-white dark:bg-[#101010]">
-                    <img src="assets/img/demo_pid_vs_neural.gif" alt="Simulation 1: Déplacement simple - PID vs Neural Anti-Swing" class="w-full h-auto object-cover" />
-                  </div>
-                  <p class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight">
-                    Trajectoire A &rarr; B : le PID oscille (27,3 cm d'erreur), le r&eacute;seau anticipe et stoppe net (15,5 cm).
-                  </p>
+              <!-- Simulations Column -->
+              <div class="lg:col-span-5 xl:col-span-5 p-4 sm:p-6 bg-neutral-100 dark:bg-[#1c1c1c] flex flex-col justify-center gap-4">
+                <div class="relative w-full rounded-xl overflow-hidden shadow-sm border border-neutral-200/80 dark:border-neutral-800 bg-white dark:bg-[#101010]">
+                  <img src="assets/img/demo_pid_vs_neural.gif" alt="Simulation 1: PID vs Neural" class="w-full h-auto object-cover" />
                 </div>
-
-                <!-- Divider -->
-                <div class="h-px bg-neutral-200 dark:bg-neutral-800"></div>
-
-                <!-- Simulation 2: Perturbation vent -->
-                <div class="space-y-2">
-                  <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider font-mono">2. Perturbation vent (1.4 N)</span>
-                    <span class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300">
-                      Hybride (+ Intégrateur)
-                    </span>
-                  </div>
-                  <div class="relative w-full rounded-xl overflow-hidden shadow-sm border border-neutral-200/80 dark:border-neutral-800 bg-white dark:bg-[#101010]">
-                    <img src="assets/img/demo_limitations_and_hybrid.gif" alt="Simulation 2: Perturbation vent - Réseau pur vs Hybride" class="w-full h-auto object-cover" />
-                  </div>
-                  <p class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight">
-                    Rafale continue : le r&eacute;seau pur d&eacute;rive sans fin (pas d'int&eacute;grateur), le contr&ocirc;leur hybride annule l'&eacute;cart.
-                  </p>
+                <div class="relative w-full rounded-xl overflow-hidden shadow-sm border border-neutral-200/80 dark:border-neutral-800 bg-white dark:bg-[#101010]">
+                  <img src="assets/img/demo_limitations_and_hybrid.gif" alt="Simulation 2: Pure Neural vs Hybrid" class="w-full h-auto object-cover" />
                 </div>
-
               </div>
 
               <div class="lg:col-span-7 p-6 sm:p-8 flex flex-col justify-between">
@@ -600,19 +570,19 @@
                       For the past two years in engineering school, I've had PID controllers drilled into my head in virtually every control systems class. I even traveled halfway around the world to Malaysia, studying alternative methods for model identification and parameter tuning. PID is everywhere and over 95% of industrial automation relies on it, but it made me wonder: why don't engineering curriculums show emerging machine learning techniques, like compact Multilayer Perceptrons, for state correction and complex nonlinear systems?
                     </p>
                     <p>
-                      To investigate, I simulated a quadrotor carrying a suspended payload—a notoriously underactuated, nonlinear system where moving the drone excites violent pendular swings. A natural question arises: couldn't a finely tuned PID do just as well? Around small angles (under 5 degrees), absolutely. Linear approximations hold, and a tuned PID provides near-optimal damping without any machine learning.
+                      To investigate, I simulated a quadrotor carrying a suspended payload, a notoriously underactuated nonlinear system where moving the drone excites violent pendular swings. A natural question arises: couldn't a finely tuned PID do just as well? Around small angles (under 5 degrees), absolutely. Linear approximations hold, and a tuned PID provides near-optimal damping without any machine learning.
                     </p>
                     <p>
                       The problem appears during aggressive maneuvers or large disturbances. Above 20 degrees of tilt, nonlinear centrifugal and Coriolis couplings dominate. Fixed linear gains face an impossible tradeoff: tune aggressively to suppress payload oscillations, and the motors chatter and saturate; tune softly for stability, and the payload swings wildly past the target (27.3 cm average miss).
                     </p>
                     <p>
-                      Control engineers traditionally tackle this with gain-scheduling lookup tables. Instead, a compact 2-layer MLP with 106 parameters (eight linear algebra equations in C) acts as a continuous nonlinear compensator. It automatically performs input shaping—counter-pitching half a period before arrival to cancel angular momentum—slashing tracking error by 43% (15.5 cm average miss) with zero oscillatory ringing.
+                      Control engineers traditionally tackle this with gain-scheduling lookup tables. Instead, a compact 2-layer MLP with 106 parameters (eight linear algebra equations in C) acts as a continuous nonlinear compensator. It automatically counter-pitches half a period before arrival to cancel angular momentum, cutting tracking error by 43% (15.5 cm average miss) with zero oscillatory ringing.
                     </p>
                     <p>
                       However, pure neural control has a fatal blind spot: sustained disturbances. By the Francis-Wonham Internal Model Principle, rejecting a constant external force (like a 1.4 N crosswind) mathematically requires an integrator. Because a feedforward MLP has no internal state, it suffers a permanent steady-state drift under wind.
                     </p>
                     <p>
-                      Where does this actually matter in industry? For single-input linear loops—such as thermal heating elements, tank water levels, motor RPM, or certified avionics requiring strict mathematical stability proofs (DO-178C)—a classical PID is strictly superior, bulletproof, and unbeatable in simplicity. Using a neural network there is unnecessary overkill.
+                      Where does this actually matter in industry? For single-input linear loops (such as thermal heating elements, tank water levels, motor RPM, or certified avionics requiring strict mathematical stability proofs under DO-178C), a classical PID is strictly superior, bulletproof, and unbeatable in simplicity. Using a neural network there is unnecessary overkill.
                     </p>
                     <p>
                       The hybrid neural approach pays off on coupled, underactuated, or hard-to-model nonlinear systems: industrial overhead cranes dampening 40-ton container swings, aerial transport drones, soft robotic exoskeletons with rubber hysteresis, or autonomous vehicles recovering at the edge of tire grip limits.
