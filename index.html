@@ -562,7 +562,7 @@
                   </div>
 
                   <h3 class="text-2xl sm:text-3xl font-bold text-[#191919] dark:text-white mb-4">
-                    Can eight equations beat 80 years of PID control?
+                    Can eight equations replace 80 years of PID control? (Spoiler: not quite.)
                   </h3>
 
                   <div class="space-y-4 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
@@ -576,7 +576,7 @@
                       The problem appears during aggressive maneuvers or large disturbances. Above 20 degrees of tilt, nonlinear centrifugal and Coriolis couplings dominate. Fixed linear gains face an impossible tradeoff: tune aggressively to suppress payload oscillations, and the motors chatter and saturate; tune softly for stability, and the payload swings wildly past the target (27.3 cm average miss).
                     </p>
                     <p>
-                      Control engineers traditionally tackle this with gain-scheduling lookup tables. Instead, a compact 2-layer MLP with 106 parameters (eight linear algebra equations in C) acts as a continuous nonlinear compensator. It automatically counter-pitches half a period before arrival to cancel angular momentum, cutting tracking error by 43% (15.5 cm average miss) with zero oscillatory ringing.
+                      Control engineers traditionally tackle this with gain-scheduling tables or Input Shaping (zero-vibration filters). But input shapers degrade when cable length or frequency shifts out-of-distribution, and running a full Nonlinear Model Predictive Controller (NMPC) at 200 Hz quickly overwhelms an embedded microcontroller. Instead, I trained a compact 2-layer MLP offline via behavioral cloning from an optimal trajectory solver, compiling it into just 106 parameters (eight linear algebra equations in C). Evaluating in under 2.5 microseconds on an ARM Cortex-M4, it automatically counter-pitches half a period before arrival to cancel angular momentum, cutting tracking error by 43% (15.5 cm average miss) with zero oscillatory ringing.
                     </p>
                     <p>
                       However, pure neural control has a fatal blind spot: sustained disturbances. By the Francis-Wonham Internal Model Principle, rejecting a constant external force (like a 1.4 N crosswind) mathematically requires an integrator. Because a feedforward MLP has no internal state, it suffers a permanent steady-state drift under wind.
