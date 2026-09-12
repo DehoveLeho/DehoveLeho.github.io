@@ -566,10 +566,13 @@
                       For the past two years in engineering school, I've had PID controllers drilled into my head in virtually every control systems class. I even traveled halfway around the world to Malaysia, studying alternative methods for model identification and parameter tuning. PID is everywhere and over 95% of industrial automation relies on it, but it made me wonder: why don't engineering curriculums show emerging machine learning techniques, like compact Multilayer Perceptrons, for state correction and complex nonlinear systems?
                     </p>
                     <p>
-                      To investigate, I simulated the quintessential benchmark every robotics student knows: the inverted pendulum on a cart. Balancing an unstable pole while tracking position is inherently nonlinear. A classic cascaded PID linearizes around vertical, but when an external 6.5 N push hits, the gravity torque quickly overwhelms the linear assumptions, triggering heavy oscillations and a 21-degree tilt before slowly recovering.
+                      To investigate, I simulated the quintessential benchmark every robotics student knows: the inverted pendulum on a cart. An obvious question arises: couldn't a properly tuned PID achieve the same result? Around the vertical equilibrium (small angles under 5 degrees), absolutely. Linear approximations hold, and a tuned PID is unbeatable without needing any machine learning.
                     </p>
                     <p>
-                      In comparison, a compact 2-layer MLP with 106 parameters (eight linear algebra equations in C) captures the full coupled state. When the push occurs, it immediately darts underneath the center of mass to absorb the momentum, limiting tilt to just 7 degrees and stabilizing in 1.2 seconds without prolonged cart ringing.
+                      The wall appears when a large perturbation hits. Under an external 6.5 N push that knocks the pole to 20 degrees, fixed linear gains face an impossible compromise: tune them aggressively to catch large tilts, and the system chatters and saturates motors at rest; tune them smoothly for the center, and the cart can't react fast enough, triggering severe oscillations before slowly recovering.
+                    </p>
+                    <p>
+                      Control engineers traditionally solve this with manual gain-scheduling tables. In comparison, a compact 2-layer MLP with 106 parameters (eight linear algebra equations in C) acts as a continuous non-linear compensator. It immediately darts under the falling center of mass, limiting tilt to 7 degrees and settling in 1.2 seconds without ringing.
                     </p>
                     <p>
                       However, pure machine learning in control has a critical catch: unmodeled bias. According to the Francis-Wonham Internal Model Principle, rejecting a sustained disturbance requires an integrator. A feedforward MLP has no memory, so under a constant force offset it suffers a permanent steady-state error. And if pole length or mass shifts out-of-distribution, phase mismatch can cause instability.
