@@ -599,6 +599,12 @@
                     <p>
                       However, pure neural control has a fatal blind spot: sustained disturbances. By the Francis-Wonham Internal Model Principle, rejecting a constant external force (like a 1.4 N crosswind) mathematically requires an integrator. Because a feedforward MLP has no internal state, it suffers a permanent steady-state drift under wind.
                     </p>
+                    <p>
+                      Where does this actually matter in industry? For single-input linear loops—such as thermal heating elements, tank water levels, motor RPM, or certified avionics requiring strict mathematical stability proofs (DO-178C)—a classical PID is strictly superior, bulletproof, and unbeatable in simplicity. Using a neural network there is unnecessary overkill.
+                    </p>
+                    <p>
+                      The hybrid neural approach pays off on coupled, underactuated, or hard-to-model nonlinear systems: industrial overhead cranes dampening 40-ton container swings, aerial transport drones, soft robotic exoskeletons with rubber hysteresis, or autonomous vehicles recovering at the edge of tire grip limits.
+                    </p>
                     <p class="font-medium text-gray-900 dark:text-white">
                       The winning architecture is hybrid: a classical PID integral baseline guaranteeing zero steady-state error, augmented by a lightweight neural policy to eliminate nonlinear swing.
                     </p>
