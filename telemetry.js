@@ -144,6 +144,14 @@
   // --- 4. Geo-IP Resolution (ipapi.co with fallback to ipwho.is) ---
   async function resolveGeoIp() {
     try {
+      const cached = sessionStorage.getItem('leho_geodata');
+      if (cached) {
+        geoData = JSON.parse(cached);
+        return;
+      }
+    } catch (e) {}
+
+    try {
       const ctrl = new AbortController();
       const tid = setTimeout(() => ctrl.abort(), 3500);
       const res = await fetch('https://ipapi.co/json/', { signal: ctrl.signal });
@@ -160,6 +168,7 @@
             postal: d.postal || '',
             timezone: d.timezone || geoData.timezone
           };
+          try { sessionStorage.setItem('leho_geodata', JSON.stringify(geoData)); } catch (e) {}
           return;
         }
       }
@@ -184,6 +193,7 @@
             postal: d2.postal || '',
             timezone: (d2.timezone && d2.timezone.id) || geoData.timezone
           };
+          try { sessionStorage.setItem('leho_geodata', JSON.stringify(geoData)); } catch (e) {}
         }
       }
     } catch (e2) {}
@@ -317,14 +327,17 @@
       Session_ID: sessionId
     };
 
+    const formData = new FormData();
+    for (const [key, val] of Object.entries(payload)) {
+      if (val !== undefined && val !== null) {
+        formData.append(key, String(val));
+      }
+    }
+
     try {
       await fetch(ENDPOINT, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(payload)
+        body: formData
       });
     } catch (e) {
       // Non-blocking
@@ -336,11 +349,9 @@
     if (exitPingSent) return;
     flushCurrentSection();
 
-    const totalSeconds = Math.max(1, Math.round((Date.now() - startTime) / 1000));
-    // Filter out micro-bots staying under 2s without any click or scroll
-    if (totalSeconds < 2 && maxScrollPercent < 10 && clickedLinks.length === 0) return;
-
     exitPingSent = true;
+
+    const totalSeconds = Math.max(1, Math.round((Date.now() - startTime) / 1000));
 
     const client = getClientInfo();
     const referrer = getReferrerInfo();
@@ -383,24 +394,31 @@
       Session_ID: sessionId
     };
 
-    const jsonBlob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+    // Build FormData: CORS-safelisted (no preflight OPTIONS request required)
+    // Guarantees reliable delivery on page teardown across Chrome, Safari, Firefox & Edge
+    const formData = new FormData();
+    for (const [key, val] of Object.entries(payload)) {
+      if (val !== undefined && val !== null) {
+        formData.append(key, String(val));
+      }
+    }
 
-    // Use sendBeacon or fetch with keepalive
-    let sent = false;
+    // 1. Try navigator.sendBeacon with FormData (runs independently in browser network process)
+    let dispatched = false;
     if (navigator.sendBeacon) {
       try {
-        sent = navigator.sendBeacon(ENDPOINT, jsonBlob);
-      } catch (e) {}
+        dispatched = navigator.sendBeacon(ENDPOINT, formData);
+      } catch (e) {
+        dispatched = false;
+      }
     }
-    if (!sent && window.fetch) {
+
+    // 2. Fallback to fetch with keepalive: true (also CORS-safelisted via FormData)
+    if (!dispatched && window.fetch) {
       try {
         fetch(ENDPOINT, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify(payload),
+          body: formData,
           keepalive: true
         });
       } catch (e) {}
@@ -415,7 +433,7 @@
     setTimeout(sendArrivalPing, 1500);
   });
 
-  // Exit handlers (visibilitychange is standard in modern browsers)
+  // Exit handlers (covers tab close, window close, navigation, tab switch, app backgrounding)
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
       sendExitPing();
@@ -424,5 +442,6 @@
 
   window.addEventListener('pagehide', sendExitPing);
   window.addEventListener('beforeunload', sendExitPing);
+  window.addEventListener('unload', sendExitPing);
 
 })();
