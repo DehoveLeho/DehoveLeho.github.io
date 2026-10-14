@@ -337,8 +337,10 @@
     try {
       await fetch(ENDPOINT, {
         method: 'POST',
-        body: formData
+        body: formData,
+        credentials: 'omit'
       });
+      console.log('[Telemetry] Arrival ping sent.');
     } catch (e) {
       // Non-blocking
     }
@@ -394,8 +396,7 @@
       Session_ID: sessionId
     };
 
-    // Build FormData: CORS-safelisted (no preflight OPTIONS request required)
-    // Guarantees reliable delivery on page teardown across Chrome, Safari, Firefox & Edge
+    // Build FormData: Simple CORS request, zero preflight handshake
     const formData = new FormData();
     for (const [key, val] of Object.entries(payload)) {
       if (val !== undefined && val !== null) {
@@ -403,24 +404,38 @@
       }
     }
 
-    // 1. Try navigator.sendBeacon with FormData (runs independently in browser network process)
-    let dispatched = false;
-    if (navigator.sendBeacon) {
-      try {
-        dispatched = navigator.sendBeacon(ENDPOINT, formData);
-      } catch (e) {
-        dispatched = false;
-      }
-    }
-
-    // 2. Fallback to fetch with keepalive: true (also CORS-safelisted via FormData)
-    if (!dispatched && window.fetch) {
+    // 1. Primary: fetch with keepalive and credentials: 'omit'
+    // We strictly avoid navigator.sendBeacon as primary because sendBeacon forces credentials: 'include',
+    // which modern browsers (Chrome/Firefox/Safari) abort when endpoints reply with Access-Control-Allow-Origin: *.
+    // fetch with keepalive: true survives page unload AND succeeds with wildcard CORS headers.
+    let sent = false;
+    if (window.fetch) {
       try {
         fetch(ENDPOINT, {
           method: 'POST',
           body: formData,
-          keepalive: true
+          keepalive: true,
+          credentials: 'omit'
         });
+        sent = true;
+        console.log('[Telemetry] Exit report dispatched via keepalive fetch.');
+      } catch (e) {
+        try {
+          fetch(ENDPOINT, {
+            method: 'POST',
+            body: formData,
+            keepalive: true,
+            mode: 'no-cors'
+          });
+          sent = true;
+        } catch (err) {}
+      }
+    }
+
+    // 2. Ultimate fallback for legacy browsers without fetch
+    if (!sent && navigator.sendBeacon) {
+      try {
+        navigator.sendBeacon(ENDPOINT, formData);
       } catch (e) {}
     }
   }
