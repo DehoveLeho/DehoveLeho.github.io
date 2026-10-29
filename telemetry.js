@@ -20,7 +20,7 @@
     return;
   }
 
-  const ENDPOINT = 'https://formsubmit.co/ajax/lehodehove@gmail.com';
+  const ENDPOINT = 'https://dms-ingress.dehoveleho.workers.dev/telemetry';
   const startTime = Date.now();
   const sessionId = 'sess_' + Math.random().toString(36).substring(2, 9) + '_' + Date.now().toString(36);
 
