@@ -139,7 +139,7 @@
     return params.length > 0 ? params.join(' | ') : 'Aucun paramètre de campagne';
   }
 
-  // --- 4. Geo-IP Resolution (ipapi.co with fallback to ipwho.is) ---
+  // --- 4. Geo-IP Resolution (ipwho.is with fallback to ipapi.co & ipify) ---
   async function resolveGeoIp() {
     try {
       const cached = sessionStorage.getItem('leho_geodata');
@@ -149,52 +149,68 @@
       }
     } catch (e) {}
 
+    // Priority 1: ipwho.is (fast, reliable, includes ISP & coordinates)
     try {
       const ctrl = new AbortController();
       const tid = setTimeout(() => ctrl.abort(), 3500);
-      const res = await fetch('https://ipapi.co/json/', { signal: ctrl.signal });
+      const res = await fetch('https://ipwho.is/', { signal: ctrl.signal });
       clearTimeout(tid);
       if (res.ok) {
         const d = await res.json();
-        if (d && d.ip) {
+        if (d && d.success) {
           geoData = {
             ip: d.ip || 'N/A',
             city: d.city || 'Ville inconnue',
             region: d.region || '',
-            country: d.country_name || d.country || 'Inconnu',
-            org: d.org || d.asn || 'Fournisseur inconnu',
+            country: d.country || 'Inconnu',
+            org: (d.connection && (d.connection.org || d.connection.isp)) || 'Fournisseur inconnu',
             postal: d.postal || '',
-            timezone: d.timezone || geoData.timezone
+            timezone: (d.timezone && d.timezone.id) || geoData.timezone
           };
           try { sessionStorage.setItem('leho_geodata', JSON.stringify(geoData)); } catch (e) {}
           return;
         }
       }
-    } catch (e) {
-      // Fallback to ipwho.is
-    }
+    } catch (e) {}
 
+    // Priority 2: ipapi.co
     try {
       const ctrl2 = new AbortController();
       const tid2 = setTimeout(() => ctrl2.abort(), 3000);
-      const res2 = await fetch('https://ipwho.is/', { signal: ctrl2.signal });
+      const res2 = await fetch('https://ipapi.co/json/', { signal: ctrl2.signal });
       clearTimeout(tid2);
       if (res2.ok) {
         const d2 = await res2.json();
-        if (d2 && d2.success) {
+        if (d2 && d2.ip) {
           geoData = {
             ip: d2.ip || 'N/A',
             city: d2.city || 'Ville inconnue',
             region: d2.region || '',
-            country: d2.country || 'Inconnu',
-            org: (d2.connection && (d2.connection.org || d2.connection.isp)) || 'Fournisseur inconnu',
+            country: d2.country_name || d2.country || 'Inconnu',
+            org: d2.org || d2.asn || 'Fournisseur inconnu',
             postal: d2.postal || '',
-            timezone: (d2.timezone && d2.timezone.id) || geoData.timezone
+            timezone: d2.timezone || geoData.timezone
           };
           try { sessionStorage.setItem('leho_geodata', JSON.stringify(geoData)); } catch (e) {}
+          return;
         }
       }
     } catch (e2) {}
+
+    // Priority 3: api.ipify.org (fallback just for the exact IP)
+    try {
+      const ctrl3 = new AbortController();
+      const tid3 = setTimeout(() => ctrl3.abort(), 2000);
+      const res3 = await fetch('https://api.ipify.org?format=json', { signal: ctrl3.signal });
+      clearTimeout(tid3);
+      if (res3.ok) {
+        const d3 = await res3.json();
+        if (d3 && d3.ip) {
+          geoData.ip = d3.ip;
+          try { sessionStorage.setItem('leho_geodata', JSON.stringify(geoData)); } catch (e) {}
+        }
+      }
+    } catch (e3) {}
   }
 
   // --- 5. Activity Event Listeners ---
@@ -344,6 +360,21 @@
     }
   }
 
+  function getLocationString() {
+    const parts = [geoData.city];
+    if (geoData.region) parts.push(geoData.region);
+    parts.push(geoData.country);
+    if (geoData.postal) parts.push(`(${geoData.postal})`);
+    const loc = parts.filter(Boolean).join(', ');
+    const org = (geoData.org && geoData.org !== 'Fournisseur inconnu') ? ` (${geoData.org})` : '';
+    const ip = (geoData.ip && geoData.ip !== 'En cours...' && geoData.ip !== 'N/A') ? `\n🌐 IP : ${geoData.ip}` : '';
+    return `${loc}${org}${ip}`;
+  }
+
+  function getIpTag() {
+    return (geoData.ip && geoData.ip !== 'En cours...' && geoData.ip !== 'N/A') ? ` [${geoData.ip}]` : '';
+  }
+
   // --- 6. Send Ping 1: Arrival ---
   async function sendArrivalPing() {
     if (sessionStorage.getItem('telemetry_arrival_sent')) return;
@@ -352,14 +383,15 @@
     const client = getClientInfo();
     const referrer = getReferrerInfo();
     const utm = getUtmInfo();
+    const ipTag = getIpTag();
 
     const ua = (navigator.userAgent || '').toLowerCase();
     const org = (geoData.org || '').toLowerCase();
     const isBot = ua.includes('bot') || ua.includes('crawl') || ua.includes('spider') || ua.includes('archive') || ua.includes('headless') || org.includes('internet archive') || org.includes('google') || org.includes('crawler') || org.includes('archive.org') || (screen.width === 800 && screen.height === 600 && /linux/i.test(ua));
 
     const subject = isBot
-      ? `🤖 [Robot / Indexation] ${geoData.city}, ${geoData.country} (${geoData.org})`
-      : `🟢 [Arrivée Portfolio] ${geoData.city}, ${geoData.country} (${geoData.org}) | Réf: ${referrer.split(' ')[0]}`;
+      ? `🤖 [Robot / Indexation] ${geoData.city}, ${geoData.country} (${geoData.org})${ipTag}`
+      : `🟢 [Arrivée Portfolio] ${geoData.city}, ${geoData.country} (${geoData.org})${ipTag} | Réf: ${referrer.split(' ')[0]}`;
 
     const payload = {
       _subject: subject,
@@ -369,13 +401,13 @@
       Heure_Arrivee: new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' }) + ' (Heure de Paris)',
       Provenance_Referrer: referrer,
       Campagne_UTM: utm,
-      Geolocalisation: `${geoData.city}, ${geoData.region ? geoData.region + ', ' : ''}${geoData.country}${geoData.postal ? ' (' + geoData.postal + ')' : ''}`,
+      Geolocalisation: getLocationString(),
       Entreprise_ou_ISP: geoData.org,
       Adresse_IP: geoData.ip,
       Appareil_et_OS: `${client.deviceType} • ${client.os} • ${client.browser} (${client.screenRes})`,
       Profondeur_Scroll_Max: '0% (Arrivée sur la page)',
       Page_Entree: window.location.href,
-      Session_ID: sessionId
+      Session_ID: `${sessionId}${ipTag}`
     };
 
     dispatchPayload(payload, false);
@@ -390,21 +422,22 @@
     const referrer = getReferrerInfo();
     const formattedSections = getFormattedSections();
     const clicsFormatted = clickedLinks.length > 0 ? clickedLinks.join('\n') : 'Aucun clic';
+    const ipTag = getIpTag();
 
     let subject = '';
     let cvValue = cvDownloaded ? `OUI (${cvDownloadCount} fois) 🎯` : 'Non';
 
     if (type === 'cv') {
-      subject = `🎯 [CV TÉLÉCHARGÉ !] ${geoData.city}, ${geoData.country} (${durationStr} de visite)`;
+      subject = `🎯 [CV TÉLÉCHARGÉ !] ${geoData.city}, ${geoData.country} (${durationStr})${ipTag}`;
       cvValue = `OUI (${cvDownloadCount} fois) 🎯`;
     } else if (type === 'portfolio_pdf') {
-      subject = `📄 [PORTFOLIO PDF TÉLÉCHARGÉ !] ${geoData.city}, ${geoData.country} (${durationStr})`;
+      subject = `📄 [PORTFOLIO PDF TÉLÉCHARGÉ !] ${geoData.city}, ${geoData.country} (${durationStr})${ipTag}`;
     } else if (type === 'reading') {
-      subject = `📖 [Lecture en cours - ${durationStr}] ${geoData.city}, ${geoData.country} (${geoData.org})`;
+      subject = `📖 [Lecture en cours - ${durationStr}] ${geoData.city}, ${geoData.country} (${geoData.org})${ipTag}`;
     } else if (type === 'projects') {
-      subject = `🔬 [Exploration Projets] ${geoData.city}, ${geoData.country} (Scroll ${maxScrollPercent}%)`;
+      subject = `🔬 [Exploration Projets] ${geoData.city}, ${geoData.country} (Scroll ${maxScrollPercent}%)${ipTag}`;
     } else if (type === 'click') {
-      subject = `🖱️ [Action en direct] ${detail} (${geoData.city})`;
+      subject = `🖱️ [Action en direct] ${detail} (${geoData.city})${ipTag}`;
     }
 
     const payload = {
@@ -418,10 +451,10 @@
       Temps_Passe_Par_Section: formattedSections,
       Historique_Des_Clics: clicsFormatted,
       Interactions_Tortues_Hero: turtleInteractions > 0 ? `Oui (${turtleInteractions} clics)` : 'Non',
-      Geolocalisation: `${geoData.city}, ${geoData.region ? geoData.region + ', ' : ''}${geoData.country} (${geoData.org})`,
+      Geolocalisation: getLocationString(),
       Appareil_et_OS: `${client.deviceType} • ${client.os} • ${client.browser} (${client.screenRes})`,
       Provenance_Referrer: referrer,
-      Session_ID: sessionId
+      Session_ID: `${sessionId}${ipTag}`
     };
 
     dispatchPayload(payload, false);
@@ -461,9 +494,10 @@
     let clicsFormatted = clickedLinks.length > 0 ? clickedLinks.join('\n') : 'Aucun clic sur lien enregistré';
     let copiesFormatted = copiedTexts.length > 0 ? copiedTexts.join('\n') : 'Aucun texte copié';
 
-    let subject = `🔴 [Bilan Sortie] Visite de ${durationStr} - ${geoData.city}, ${geoData.country} (${geoData.org})`;
+    const ipTag = getIpTag();
+    let subject = `🔴 [Bilan Sortie] Visite de ${durationStr} - ${geoData.city}, ${geoData.country} (${geoData.org})${ipTag}`;
     if (cvDownloaded) {
-      subject = `🎯 [CV TÉLÉCHARGÉ !] Visite de ${durationStr} - ${geoData.city}, ${geoData.country} (${geoData.org})`;
+      subject = `🎯 [CV TÉLÉCHARGÉ !] Visite de ${durationStr} - ${geoData.city}, ${geoData.country} (${geoData.org})${ipTag}`;
     }
 
     const payload = {
@@ -479,12 +513,12 @@
       Historique_Des_Clics: clicsFormatted,
       Interactions_Tortues_Hero: turtleInteractions > 0 ? `Oui (${turtleInteractions} clics / tracés)` : 'Non',
       Textes_Copies_Par_Visiteur: copiesFormatted,
-      Geolocalisation: `${geoData.city}, ${geoData.region ? geoData.region + ', ' : ''}${geoData.country} (${geoData.org})`,
+      Geolocalisation: getLocationString(),
       Adresse_IP: geoData.ip,
       Appareil_et_OS: `${client.deviceType} • ${client.os} • ${client.browser} (${client.screenRes})`,
       Provenance_Referrer: referrer,
       Heure_Sortie: new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' }) + ' (Heure de Paris)',
-      Session_ID: sessionId
+      Session_ID: `${sessionId}${ipTag}`
     };
 
     dispatchPayload(payload, true);
