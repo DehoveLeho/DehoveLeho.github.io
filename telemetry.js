@@ -5,18 +5,16 @@
 (function () {
   'use strict';
 
-  // --- 1. Anti-Self-Tracking & Exclusion Check ---
+  // --- 1. Developer Mode Check ---
   const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.has('me') || urlParams.has('admin') || urlParams.has('no_track')) {
-    localStorage.setItem('leho_no_track', '1');
-    console.info('[Telemetry] Mode développeur activé : vos visites personnelles ne seront pas tracées.');
+  // Clear any legacy exclusion so test visits work reliably
+  try { localStorage.removeItem('leho_no_track'); } catch (e) {}
+  if (urlParams.has('no_track')) {
+    console.info('[Telemetry] Suivi désactivé pour cet onglet.');
     return;
   }
-  if (urlParams.has('track_me') || urlParams.has('enable_track')) {
-    localStorage.removeItem('leho_no_track');
-    console.info('[Telemetry] Suivi réactivé.');
-  }
-  if (localStorage.getItem('leho_no_track') === '1' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+  // Allow localhost testing if ?test=1 is in URL
+  if ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && !urlParams.has('test')) {
     return;
   }
 
@@ -261,10 +259,13 @@
         sendInstantAlert('portfolio_pdf', href);
       } else if (href.includes('linkedin.com')) {
         clickedLinks.push(`[${timeOffset}s] Clic LinkedIn (${href})`);
+        sendInstantAlert('click', 'LinkedIn');
       } else if (href.includes('github.com')) {
         clickedLinks.push(`[${timeOffset}s] Clic GitHub (${href})`);
+        sendInstantAlert('click', 'GitHub');
       } else if (href.startsWith('mailto:')) {
         clickedLinks.push(`[${timeOffset}s] Clic Email (${href})`);
+        sendInstantAlert('click', 'Email');
       } else if (href.startsWith('#')) {
         clickedLinks.push(`[${timeOffset}s] Navigation ancre : ${href} ("${text}")`);
       } else if (href) {
@@ -309,18 +310,14 @@
 
   // --- Central Dispatcher for Cloudflare Ingress & Discord ---
   function dispatchPayload(payload, isExit = false) {
-    const formData = new FormData();
-    for (const [key, val] of Object.entries(payload)) {
-      if (val !== undefined && val !== null) {
-        formData.append(key, String(val));
-      }
-    }
+    const jsonStr = JSON.stringify(payload);
 
     if (window.fetch) {
       try {
         fetch(ENDPOINT, {
           method: 'POST',
-          body: formData,
+          headers: { 'Content-Type': 'application/json' },
+          body: jsonStr,
           keepalive: isExit,
           credentials: 'omit'
         });
@@ -329,7 +326,8 @@
         try {
           fetch(ENDPOINT, {
             method: 'POST',
-            body: formData,
+            headers: { 'Content-Type': 'application/json' },
+            body: jsonStr,
             keepalive: isExit,
             mode: 'no-cors'
           });
@@ -340,7 +338,8 @@
 
     if (isExit && navigator.sendBeacon) {
       try {
-        navigator.sendBeacon(ENDPOINT, formData);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        navigator.sendBeacon(ENDPOINT, blob);
       } catch (e) {}
     }
   }
@@ -354,13 +353,19 @@
     const referrer = getReferrerInfo();
     const utm = getUtmInfo();
 
-    const subject = `🟢 [Arrivée Portfolio] ${geoData.city}, ${geoData.country} (${geoData.org}) | Réf: ${referrer.split(' ')[0]}`;
+    const ua = (navigator.userAgent || '').toLowerCase();
+    const org = (geoData.org || '').toLowerCase();
+    const isBot = ua.includes('bot') || ua.includes('crawl') || ua.includes('spider') || ua.includes('archive') || ua.includes('headless') || org.includes('internet archive') || org.includes('google') || org.includes('crawler') || org.includes('archive.org') || (screen.width === 800 && screen.height === 600 && /linux/i.test(ua));
+
+    const subject = isBot
+      ? `🤖 [Robot / Indexation] ${geoData.city}, ${geoData.country} (${geoData.org})`
+      : `🟢 [Arrivée Portfolio] ${geoData.city}, ${geoData.country} (${geoData.org}) | Réf: ${referrer.split(' ')[0]}`;
 
     const payload = {
       _subject: subject,
       _template: 'table',
       _captcha: 'false',
-      Statut: 'VISITE EN COURS (Ping d\'arrivée immédiat)',
+      Statut: isBot ? 'ROBOT D\'INDEXATION (CRAWLER)' : 'VISITE EN COURS (Ping d\'arrivée immédiat)',
       Heure_Arrivee: new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' }) + ' (Heure de Paris)',
       Provenance_Referrer: referrer,
       Campagne_UTM: utm,
@@ -395,17 +400,21 @@
     } else if (type === 'portfolio_pdf') {
       subject = `📄 [PORTFOLIO PDF TÉLÉCHARGÉ !] ${geoData.city}, ${geoData.country} (${durationStr})`;
     } else if (type === 'reading') {
-      subject = `📖 [Lecture Active - ${durationStr}] ${geoData.city}, ${geoData.country} (${geoData.org})`;
+      subject = `📖 [Lecture en cours - ${durationStr}] ${geoData.city}, ${geoData.country} (${geoData.org})`;
+    } else if (type === 'projects') {
+      subject = `🔬 [Exploration Projets] ${geoData.city}, ${geoData.country} (Scroll ${maxScrollPercent}%)`;
+    } else if (type === 'click') {
+      subject = `🖱️ [Action en direct] ${detail} (${geoData.city})`;
     }
 
     const payload = {
       _subject: subject,
       _template: 'table',
       _captcha: 'false',
-      Statut: type === 'cv' ? 'CV TÉLÉCHARGÉ' : 'LECTURE EN COURS',
+      Statut: type === 'cv' ? 'CV TÉLÉCHARGÉ' : 'ACTIVITÉ EN DIRECT',
       Duree_Totale: `${durationStr} (${totalSeconds}s)`,
       CV_Telecharge: cvValue,
-      Profondeur_Scroll_Max: `${maxScrollPercent}% ${maxScrollPercent >= 80 ? '(A lu toute la page)' : ''}`,
+      Profondeur_Scroll_Max: `${maxScrollPercent}% ${maxScrollPercent >= 80 ? '(A lu presque toute la page)' : ''}`,
       Temps_Passe_Par_Section: formattedSections,
       Historique_Des_Clics: clicsFormatted,
       Interactions_Tortues_Hero: turtleInteractions > 0 ? `Oui (${turtleInteractions} clics)` : 'Non',
@@ -419,14 +428,22 @@
     console.log(`[Telemetry] Alert dispatched: ${type}`);
   }
 
-  // Active reading milestone: sent once if visitor stays >= 25s with active reading or scrolls > 65%
-  let readingMilestoneSent = false;
+  // Active reading milestone: progressive triggers so activity is seen immediately
+  let firstMilestoneSent = false;
+  let projectMilestoneSent = false;
   function checkReadingMilestone() {
-    if (readingMilestoneSent) return;
     const totalSeconds = Math.round((Date.now() - startTime) / 1000);
-    if ((totalSeconds >= 25 && maxScrollPercent >= 35) || (maxScrollPercent >= 70 && totalSeconds >= 10)) {
-      readingMilestoneSent = true;
+
+    // Milestone 1: Early reading/scroll (>= 6s with scroll >= 10%, or >= 12s on page)
+    if (!firstMilestoneSent && ((totalSeconds >= 6 && maxScrollPercent >= 10) || totalSeconds >= 12)) {
+      firstMilestoneSent = true;
       sendInstantAlert('reading');
+    }
+
+    // Milestone 2: Projects section reached (scroll >= 40%)
+    if (!projectMilestoneSent && maxScrollPercent >= 40 && totalSeconds >= 6) {
+      projectMilestoneSent = true;
+      sendInstantAlert('projects');
     }
   }
 
@@ -483,12 +500,14 @@
   });
 
   // Check periodically for active reading milestone
-  setInterval(checkReadingMilestone, 5000);
+  setInterval(checkReadingMilestone, 3000);
 
   // Exit handlers (covers tab close, window close, navigation, tab switch, app backgrounding)
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
       sendExitPing();
+    } else if (document.visibilityState === 'visible') {
+      exitPingSent = false;
     }
   });
 
