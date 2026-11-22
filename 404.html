@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Lého Dehove - Portfolio</title>
+  <script>
+    (function () {
+      var fullPath = window.location.pathname || '';
+      var cleanSlug = fullPath.replace(/^\/+|\/+$/g, '').trim();
+
+      // If user typed a slug like /airbus or /thales, redirect to /?ref=<slug>
+      if (cleanSlug && cleanSlug.indexOf('.') === -1) {
+        try { sessionStorage.setItem('leho_entry_ref', cleanSlug); } catch (e) {}
+        window.location.replace('/?ref=' + encodeURIComponent(cleanSlug));
+      } else {
+        window.location.replace('/');
+      }
+    })();
+  </script>
+</head>
+<body style="font-family:sans-serif;text-align:center;padding:50px;color:#555;">
+  <p>Redirection vers le portfolio...</p>
+</body>
+</html>

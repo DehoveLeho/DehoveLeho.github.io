@@ -116,19 +116,60 @@
     };
   }
 
-  // --- 3. Traffic Origin & Referrer ---
-  function getReferrerInfo() {
-    const rawRef = document.referrer;
-    if (!rawRef) return 'Accès Direct / Favori / Lien PDF du CV';
-    try {
-      const refUrl = new URL(rawRef);
-      if (refUrl.hostname.includes('linkedin.com')) return `LinkedIn (${rawRef})`;
-      if (refUrl.hostname.includes('google.')) return `Recherche Google (${rawRef})`;
-      if (refUrl.hostname.includes('github.com')) return `GitHub (${rawRef})`;
-      return rawRef;
-    } catch (e) {
-      return rawRef;
+  // --- 3. Traffic Origin & Provenance Tracking ---
+  function getOriginData() {
+    let refParam = urlParams.get('ref') || urlParams.get('src') || urlParams.get('from') || urlParams.get('utm_source') || '';
+
+    // Check if previous page stored a ref or if stored in sessionStorage
+    if (refParam) {
+      try { sessionStorage.setItem('leho_entry_ref', refParam); } catch (e) {}
+    } else {
+      try { refParam = sessionStorage.getItem('leho_entry_ref') || ''; } catch (e) {}
     }
+
+    const rawRef = document.referrer || '';
+    const norm = refParam.toLowerCase().trim();
+
+    if (norm === 'linkedin' || norm === 'li') {
+      return { label: '💼 LinkedIn (Profil / Post / DM)', short: 'LinkedIn' };
+    }
+    if (norm === 'cv' || norm === 'resume') {
+      return { label: '🎯 CV (Lien direct dans le PDF du CV)', short: 'Lien CV' };
+    }
+    if (norm === 'cover' || norm === 'lettre' || norm === 'lm' || norm === 'motivation') {
+      return { label: '✉️ Lettre de motivation (Cover Letter)', short: 'Cover Letter' };
+    }
+    if (norm === 'mail' || norm === 'email' || norm === 'gmail') {
+      return { label: '📧 Email direct / Candidature', short: 'Email' };
+    }
+    if (norm === 'github' || norm === 'gh') {
+      return { label: '🐙 GitHub (Dépôt / Profil)', short: 'GitHub' };
+    }
+    if (norm) {
+      // Custom recruiter / company tag (e.g. /airbus, /thales, /dassault, /safran)
+      return { label: `🏷️ Lien spécifique : "${refParam}"`, short: refParam };
+    }
+
+    // Fallback to HTTP document.referrer if no parameter
+    if (rawRef) {
+      try {
+        const refUrl = new URL(rawRef);
+        if (refUrl.hostname.includes('linkedin.com')) {
+          return { label: `💼 LinkedIn (Site web : ${rawRef})`, short: 'LinkedIn' };
+        }
+        if (refUrl.hostname.includes('google.')) {
+          return { label: `🔍 Recherche Google (${rawRef})`, short: 'Google' };
+        }
+        if (refUrl.hostname.includes('github.com')) {
+          return { label: `🐙 GitHub (${rawRef})`, short: 'GitHub' };
+        }
+        return { label: `🌐 Externe : ${refUrl.hostname}`, short: refUrl.hostname };
+      } catch (e) {
+        return { label: rawRef, short: 'Web' };
+      }
+    }
+
+    return { label: '🚪 Accès Direct / Favori', short: 'Accès Direct' };
   }
 
   function getUtmInfo() {
@@ -381,7 +422,7 @@
     sessionStorage.setItem('telemetry_arrival_sent', '1');
 
     const client = getClientInfo();
-    const referrer = getReferrerInfo();
+    const origin = getOriginData();
     const utm = getUtmInfo();
     const ipTag = getIpTag();
 
@@ -391,7 +432,7 @@
 
     const subject = isBot
       ? `🤖 [Robot / Indexation] ${geoData.city}, ${geoData.country} (${geoData.org})${ipTag}`
-      : `🟢 [Arrivée Portfolio] ${geoData.city}, ${geoData.country} (${geoData.org})${ipTag} | Réf: ${referrer.split(' ')[0]}`;
+      : `🟢 [Arrivée Portfolio] ${geoData.city}, ${geoData.country} (${geoData.org})${ipTag} | Source: ${origin.short}`;
 
     const payload = {
       _subject: subject,
@@ -399,7 +440,7 @@
       _captcha: 'false',
       Statut: isBot ? 'ROBOT D\'INDEXATION (CRAWLER)' : 'VISITE EN COURS (Ping d\'arrivée immédiat)',
       Heure_Arrivee: new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' }) + ' (Heure de Paris)',
-      Provenance_Referrer: referrer,
+      Provenance_Referrer: origin.label,
       Campagne_UTM: utm,
       Geolocalisation: getLocationString(),
       Entreprise_ou_ISP: geoData.org,
@@ -419,7 +460,7 @@
     const totalSeconds = Math.max(1, Math.round((Date.now() - startTime) / 1000));
     const durationStr = formatDuration(totalSeconds);
     const client = getClientInfo();
-    const referrer = getReferrerInfo();
+    const origin = getOriginData();
     const formattedSections = getFormattedSections();
     const clicsFormatted = clickedLinks.length > 0 ? clickedLinks.join('\n') : 'Aucun clic';
     const ipTag = getIpTag();
@@ -453,7 +494,7 @@
       Interactions_Tortues_Hero: turtleInteractions > 0 ? `Oui (${turtleInteractions} clics)` : 'Non',
       Geolocalisation: getLocationString(),
       Appareil_et_OS: `${client.deviceType} • ${client.os} • ${client.browser} (${client.screenRes})`,
-      Provenance_Referrer: referrer,
+      Provenance_Referrer: origin.label,
       Session_ID: `${sessionId}${ipTag}`
     };
 
@@ -488,7 +529,7 @@
     const totalSeconds = Math.max(1, Math.round((Date.now() - startTime) / 1000));
     const durationStr = formatDuration(totalSeconds);
     const client = getClientInfo();
-    const referrer = getReferrerInfo();
+    const origin = getOriginData();
     const formattedSections = getFormattedSections();
 
     let clicsFormatted = clickedLinks.length > 0 ? clickedLinks.join('\n') : 'Aucun clic sur lien enregistré';
@@ -516,7 +557,7 @@
       Geolocalisation: getLocationString(),
       Adresse_IP: geoData.ip,
       Appareil_et_OS: `${client.deviceType} • ${client.os} • ${client.browser} (${client.screenRes})`,
-      Provenance_Referrer: referrer,
+      Provenance_Referrer: origin.label,
       Heure_Sortie: new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' }) + ' (Heure de Paris)',
       Session_ID: `${sessionId}${ipTag}`
     };
