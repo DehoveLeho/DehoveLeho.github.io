@@ -208,6 +208,7 @@
         const currentPercent = Math.min(100, Math.round((window.scrollY / scrollHeight) * 100));
         if (currentPercent > maxScrollPercent) {
           maxScrollPercent = currentPercent;
+          checkReadingMilestone();
         }
       }
     }, { passive: true });
@@ -253,9 +254,11 @@
         cvDownloaded = true;
         cvDownloadCount++;
         clickedLinks.push(`[${timeOffset}s] 🎯 TELECHARGEMENT CV (${href})`);
-      } else if (href.includes('Leho_Dehove_Portfolio.pdf')) {
+        sendInstantAlert('cv', href);
+      } else if (href.includes('Leho_Dehove_Portfolio.pdf') || href.includes('Portfolio.pdf')) {
         portfolioPdfDownloaded = true;
         clickedLinks.push(`[${timeOffset}s] 📄 TELECHARGEMENT PORTFOLIO PDF (${href})`);
+        sendInstantAlert('portfolio_pdf', href);
       } else if (href.includes('linkedin.com')) {
         clickedLinks.push(`[${timeOffset}s] Clic LinkedIn (${href})`);
       } else if (href.includes('github.com')) {
@@ -294,6 +297,54 @@
     return `${m}m ${s < 10 ? '0' : ''}${s}s`;
   }
 
+  // --- Helper: Format Section Dwell Times ---
+  function getFormattedSections() {
+    flushCurrentSection();
+    let formatted = Object.entries(sectionDwell)
+      .filter(([_, sec]) => sec > 0)
+      .map(([name, sec]) => `${name} : ${formatDuration(sec)}`)
+      .join('\n• ');
+    return formatted ? '• ' + formatted : 'Consultation initiale';
+  }
+
+  // --- Central Dispatcher for Cloudflare Ingress & Discord ---
+  function dispatchPayload(payload, isExit = false) {
+    const formData = new FormData();
+    for (const [key, val] of Object.entries(payload)) {
+      if (val !== undefined && val !== null) {
+        formData.append(key, String(val));
+      }
+    }
+
+    if (window.fetch) {
+      try {
+        fetch(ENDPOINT, {
+          method: 'POST',
+          body: formData,
+          keepalive: isExit,
+          credentials: 'omit'
+        });
+        return;
+      } catch (e) {
+        try {
+          fetch(ENDPOINT, {
+            method: 'POST',
+            body: formData,
+            keepalive: isExit,
+            mode: 'no-cors'
+          });
+          return;
+        } catch (err) {}
+      }
+    }
+
+    if (isExit && navigator.sendBeacon) {
+      try {
+        navigator.sendBeacon(ENDPOINT, formData);
+      } catch (e) {}
+    }
+  }
+
   // --- 6. Send Ping 1: Arrival ---
   async function sendArrivalPing() {
     if (sessionStorage.getItem('telemetry_arrival_sent')) return;
@@ -316,70 +367,93 @@
       Geolocalisation: `${geoData.city}, ${geoData.region ? geoData.region + ', ' : ''}${geoData.country}${geoData.postal ? ' (' + geoData.postal + ')' : ''}`,
       Entreprise_ou_ISP: geoData.org,
       Adresse_IP: geoData.ip,
-      Appareil: client.deviceType,
-      Systeme_OS: client.os,
-      Navigateur: client.browser,
-      Resolution_Ecran: `${client.screenRes} (Fenêtre : ${client.viewport})`,
-      Langues_et_Fuseau: `${client.language} | Fuseau: ${geoData.timezone}`,
-      Connexion: client.connectionInfo,
-      Hardware: `Processeur: ${client.cpuCores} | Mémoire: ${client.deviceMemory}`,
+      Appareil_et_OS: `${client.deviceType} • ${client.os} • ${client.browser} (${client.screenRes})`,
+      Profondeur_Scroll_Max: '0% (Arrivée sur la page)',
       Page_Entree: window.location.href,
       Session_ID: sessionId
     };
 
-    const formData = new FormData();
-    for (const [key, val] of Object.entries(payload)) {
-      if (val !== undefined && val !== null) {
-        formData.append(key, String(val));
-      }
-    }
-
-    try {
-      await fetch(ENDPOINT, {
-        method: 'POST',
-        body: formData,
-        credentials: 'omit'
-      });
-      console.log('[Telemetry] Arrival ping sent.');
-    } catch (e) {
-      // Non-blocking
-    }
+    dispatchPayload(payload, false);
+    console.log('[Telemetry] Arrival ping sent.');
   }
 
-  // --- 7. Send Ping 2: Exit (Bilan d'activité complet) ---
-  function sendExitPing() {
-    if (exitPingSent) return;
-    flushCurrentSection();
-
-    exitPingSent = true;
-
+  // --- 7. Real-Time Engagement & Action Alerts ---
+  function sendInstantAlert(type, detail = '') {
     const totalSeconds = Math.max(1, Math.round((Date.now() - startTime) / 1000));
-
+    const durationStr = formatDuration(totalSeconds);
     const client = getClientInfo();
     const referrer = getReferrerInfo();
+    const formattedSections = getFormattedSections();
+    const clicsFormatted = clickedLinks.length > 0 ? clickedLinks.join('\n') : 'Aucun clic';
 
-    let formattedSections = Object.entries(sectionDwell)
-      .filter(([_, sec]) => sec > 0)
-      .map(([name, sec]) => `${name} : ${formatDuration(sec)}`)
-      .join('\n• ');
+    let subject = '';
+    let cvValue = cvDownloaded ? `OUI (${cvDownloadCount} fois) 🎯` : 'Non';
 
-    if (!formattedSections) formattedSections = 'Visite courte (aucune section maintenue active)';
-    else formattedSections = '• ' + formattedSections;
-
-    let clicsFormatted = clickedLinks.length > 0 ? clickedLinks.join('\n') : 'Aucun clic sur lien enregistré';
-    let copiesFormatted = copiedTexts.length > 0 ? copiedTexts.join('\n') : 'Aucun texte copié';
-
-    const durationStr = formatDuration(totalSeconds);
-    let subject = `🔴 [Bilan Sortie] Visite de ${durationStr} - ${geoData.city}, ${geoData.country} (${geoData.org})`;
-    if (cvDownloaded) {
-      subject = `🎯 [CV TELECHARGE !] Visite de ${durationStr} - ${geoData.city}, ${geoData.country} (${geoData.org})`;
+    if (type === 'cv') {
+      subject = `🎯 [CV TÉLÉCHARGÉ !] ${geoData.city}, ${geoData.country} (${durationStr} de visite)`;
+      cvValue = `OUI (${cvDownloadCount} fois) 🎯`;
+    } else if (type === 'portfolio_pdf') {
+      subject = `📄 [PORTFOLIO PDF TÉLÉCHARGÉ !] ${geoData.city}, ${geoData.country} (${durationStr})`;
+    } else if (type === 'reading') {
+      subject = `📖 [Lecture Active - ${durationStr}] ${geoData.city}, ${geoData.country} (${geoData.org})`;
     }
 
     const payload = {
       _subject: subject,
       _template: 'table',
       _captcha: 'false',
-      Statut: 'VISITE TERMINEE (Bilan Complet d\'Activité)',
+      Statut: type === 'cv' ? 'CV TÉLÉCHARGÉ' : 'LECTURE EN COURS',
+      Duree_Totale: `${durationStr} (${totalSeconds}s)`,
+      CV_Telecharge: cvValue,
+      Profondeur_Scroll_Max: `${maxScrollPercent}% ${maxScrollPercent >= 80 ? '(A lu toute la page)' : ''}`,
+      Temps_Passe_Par_Section: formattedSections,
+      Historique_Des_Clics: clicsFormatted,
+      Interactions_Tortues_Hero: turtleInteractions > 0 ? `Oui (${turtleInteractions} clics)` : 'Non',
+      Geolocalisation: `${geoData.city}, ${geoData.region ? geoData.region + ', ' : ''}${geoData.country} (${geoData.org})`,
+      Appareil_et_OS: `${client.deviceType} • ${client.os} • ${client.browser} (${client.screenRes})`,
+      Provenance_Referrer: referrer,
+      Session_ID: sessionId
+    };
+
+    dispatchPayload(payload, false);
+    console.log(`[Telemetry] Alert dispatched: ${type}`);
+  }
+
+  // Active reading milestone: sent once if visitor stays >= 25s with active reading or scrolls > 65%
+  let readingMilestoneSent = false;
+  function checkReadingMilestone() {
+    if (readingMilestoneSent) return;
+    const totalSeconds = Math.round((Date.now() - startTime) / 1000);
+    if ((totalSeconds >= 25 && maxScrollPercent >= 35) || (maxScrollPercent >= 70 && totalSeconds >= 10)) {
+      readingMilestoneSent = true;
+      sendInstantAlert('reading');
+    }
+  }
+
+  // --- 8. Send Ping 3: Exit (Bilan d'activité complet) ---
+  function sendExitPing() {
+    if (exitPingSent) return;
+    exitPingSent = true;
+
+    const totalSeconds = Math.max(1, Math.round((Date.now() - startTime) / 1000));
+    const durationStr = formatDuration(totalSeconds);
+    const client = getClientInfo();
+    const referrer = getReferrerInfo();
+    const formattedSections = getFormattedSections();
+
+    let clicsFormatted = clickedLinks.length > 0 ? clickedLinks.join('\n') : 'Aucun clic sur lien enregistré';
+    let copiesFormatted = copiedTexts.length > 0 ? copiedTexts.join('\n') : 'Aucun texte copié';
+
+    let subject = `🔴 [Bilan Sortie] Visite de ${durationStr} - ${geoData.city}, ${geoData.country} (${geoData.org})`;
+    if (cvDownloaded) {
+      subject = `🎯 [CV TÉLÉCHARGÉ !] Visite de ${durationStr} - ${geoData.city}, ${geoData.country} (${geoData.org})`;
+    }
+
+    const payload = {
+      _subject: subject,
+      _template: 'table',
+      _captcha: 'false',
+      Statut: 'VISITE TERMINÉE (Bilan Complet d\'Activité)',
       Duree_Totale: `${durationStr} (${totalSeconds} secondes)`,
       CV_Telecharge: cvDownloaded ? `OUI (${cvDownloadCount} fois) 🎯` : 'Non ❌',
       Portfolio_PDF_Telecharge: portfolioPdfDownloaded ? 'OUI 📄' : 'Non',
@@ -390,63 +464,26 @@
       Textes_Copies_Par_Visiteur: copiesFormatted,
       Geolocalisation: `${geoData.city}, ${geoData.region ? geoData.region + ', ' : ''}${geoData.country} (${geoData.org})`,
       Adresse_IP: geoData.ip,
-      Appareil_et_OS: `${client.deviceType} | ${client.os} | ${client.browser}`,
+      Appareil_et_OS: `${client.deviceType} • ${client.os} • ${client.browser} (${client.screenRes})`,
       Provenance_Referrer: referrer,
       Heure_Sortie: new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' }) + ' (Heure de Paris)',
       Session_ID: sessionId
     };
 
-    // Build FormData: Simple CORS request, zero preflight handshake
-    const formData = new FormData();
-    for (const [key, val] of Object.entries(payload)) {
-      if (val !== undefined && val !== null) {
-        formData.append(key, String(val));
-      }
-    }
-
-    // 1. Primary: fetch with keepalive and credentials: 'omit'
-    // We strictly avoid navigator.sendBeacon as primary because sendBeacon forces credentials: 'include',
-    // which modern browsers (Chrome/Firefox/Safari) abort when endpoints reply with Access-Control-Allow-Origin: *.
-    // fetch with keepalive: true survives page unload AND succeeds with wildcard CORS headers.
-    let sent = false;
-    if (window.fetch) {
-      try {
-        fetch(ENDPOINT, {
-          method: 'POST',
-          body: formData,
-          keepalive: true,
-          credentials: 'omit'
-        });
-        sent = true;
-        console.log('[Telemetry] Exit report dispatched via keepalive fetch.');
-      } catch (e) {
-        try {
-          fetch(ENDPOINT, {
-            method: 'POST',
-            body: formData,
-            keepalive: true,
-            mode: 'no-cors'
-          });
-          sent = true;
-        } catch (err) {}
-      }
-    }
-
-    // 2. Ultimate fallback for legacy browsers without fetch
-    if (!sent && navigator.sendBeacon) {
-      try {
-        navigator.sendBeacon(ENDPOINT, formData);
-      } catch (e) {}
-    }
+    dispatchPayload(payload, true);
+    console.log('[Telemetry] Exit report dispatched.');
   }
 
-  // --- 8. Lifecycle Orchestration ---
+  // --- 9. Lifecycle Orchestration ---
   setupTracking();
 
   // Resolve GeoIP then fire arrival ping after 1.5s
   resolveGeoIp().finally(() => {
     setTimeout(sendArrivalPing, 1500);
   });
+
+  // Check periodically for active reading milestone
+  setInterval(checkReadingMilestone, 5000);
 
   // Exit handlers (covers tab close, window close, navigation, tab switch, app backgrounding)
   document.addEventListener('visibilitychange', () => {
